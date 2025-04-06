@@ -3,9 +3,24 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Models\User;
+
+
+Route::get('create-storage-link', function () {
+    Artisan::call('storage:link');
+    return response()->json(['message' => 'Storage link created successfully']);
+});
+
+Route::get('clear-cache', function () {
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('view:clear');
+    return response()->json(['message' => 'All caches cleared successfully']);
+});
+
 
 // Public routes
 Route::get('/categories', [CategoryController::class, 'index']);
