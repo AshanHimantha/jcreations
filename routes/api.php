@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Artisan;
@@ -28,6 +30,15 @@ Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
+
+
+Route::get('/cart', [CartController::class, 'index']);
+Route::delete('/cart', [CartController::class, 'clear']);
+Route::post('/cart/items', [CartItemController::class, 'store']);
+Route::put('/cart/items/{id}', [CartItemController::class, 'update']);
+Route::delete('/cart/items/{id}', [CartItemController::class, 'destroy']);
+
+
 
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
