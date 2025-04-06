@@ -292,48 +292,7 @@
                                         "items": {
                                             "type": "array",
                                             "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer",
-                                                        "example": 1
-                                                    },
-                                                    "quantity": {
-                                                        "type": "integer",
-                                                        "example": 2
-                                                    },
-                                                    "subtotal": {
-                                                        "type": "number",
-                                                        "example": 89.98
-                                                    },
-                                                    "product": {
-                                                        "properties": {
-                                                            "id": {
-                                                                "type": "integer",
-                                                                "example": 1
-                                                            },
-                                                            "name": {
-                                                                "type": "string",
-                                                                "example": "Chocolate Birthday Cake"
-                                                            },
-                                                            "price": {
-                                                                "type": "number",
-                                                                "example": 45.99
-                                                            },
-                                                            "discount_percentage": {
-                                                                "type": "number",
-                                                                "example": 0
-                                                            },
-                                                            "images": {
-                                                                "type": "array",
-                                                                "items": {
-                                                                    "type": "string"
-                                                                }
-                                                            }
-                                                        },
-                                                        "type": "object"
-                                                    }
-                                                },
-                                                "type": "object"
+                                                "$ref": "#/components/schemas/CartItem"
                                             }
                                         }
                                     },
@@ -415,38 +374,7 @@
                                             "example": "Item added to cart"
                                         },
                                         "item": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "cart_id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "product_id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "quantity": {
-                                                    "type": "integer",
-                                                    "example": 2
-                                                },
-                                                "product": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "integer",
-                                                            "example": 1
-                                                        },
-                                                        "name": {
-                                                            "type": "string",
-                                                            "example": "Chocolate Birthday Cake"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
+                                            "$ref": "#/components/schemas/CartItemWithProduct"
                                         }
                                     },
                                     "type": "object"
@@ -514,17 +442,7 @@
                                             "example": "Cart item updated"
                                         },
                                         "item": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "quantity": {
-                                                    "type": "integer",
-                                                    "example": 3
-                                                }
-                                            },
-                                            "type": "object"
+                                            "$ref": "#/components/schemas/CartItem"
                                         }
                                     },
                                     "type": "object"
@@ -1329,6 +1247,58 @@
     },
     "components": {
         "schemas": {
+            "CartItem": {
+                "title": "Cart Item",
+                "description": "Cart item model",
+                "properties": {
+                    "id": {
+                        "description": "Class CartItem",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "cart_id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "product_id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "CartItemWithProduct": {
+                "title": "Cart Item With Product",
+                "description": "Cart item with embedded product data",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CartItem"
+                    },
+                    {
+                        "properties": {
+                            "product": {
+                                "$ref": "#/components/schemas/Product"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
             "Product": {
                 "required": [
                     "name",
