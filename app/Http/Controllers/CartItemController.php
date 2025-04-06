@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Services\CartService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 /**
  * @OA\Tag(
@@ -16,55 +16,14 @@ use Illuminate\Support\Str;
  */
 class CartItemController extends Controller
 {
+    protected $cartService;
+    
     /**
-     * Get or create a cart for the current user/session.
+     * CartItemController constructor.
      */
-    private function getOrCreateCart(Request $request)
+    public function __construct(CartService $cartService)
     {
-        $firebaseUid = null;
-        $sessionId = $request->cookie('cart_session_id');
-        
-        // Check if user is authenticated with Firebase
-        if ($request->user()) {
-            $firebaseUid = $request->user()->firebase_uid;
-            
-            // Look for existing cart with this Firebase UID
-            $cart = Cart::where('firebase_uid', $firebaseUid)->first();
-            
-            // If user has a session cart, migrate it to their account
-            if (!$cart && $sessionId) {
-                $sessionCart = Cart::where('session_id', $sessionId)->first();
-                if ($sessionCart) {
-                    $sessionCart->firebase_uid = $firebaseUid;
-                    $sessionCart->session_id = null;
-                    $sessionCart->save();
-                    return $sessionCart;
-                }
-            }
-            
-            // Create new cart if none exists
-            if (!$cart) {
-                $cart = Cart::create(['firebase_uid' => $firebaseUid]);
-            }
-            
-            return $cart;
-        }
-        
-        // For guest users, use session ID
-        if (!$sessionId) {
-            $sessionId = Str::uuid()->toString();
-            
-            // Set cookie that expires in 30 days
-            cookie('cart_session_id', $sessionId, 43200);
-        }
-        
-        $cart = Cart::where('session_id', $sessionId)->first();
-        
-        if (!$cart) {
-            $cart = Cart::create(['session_id' => $sessionId]);
-        }
-        
-        return $cart;
+        $this->cartService = $cartService;
     }
 
     /**
@@ -88,20 +47,7 @@ class CartItemController extends Controller
      *         description="Item added to cart",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Item added to cart"),
-     *             @OA\Property(
-     *                 property="item",
-     *                 type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="cart_id", type="integer", example=1),
-     *                 @OA\Property(property="product_id", type="integer", example=1),
-     *                 @OA\Property(property="quantity", type="integer", example=2),
-     *                 @OA\Property(
-     *                     property="product",
-     *                     type="object",
-     *                     @OA\Property(property="id", type="integer", example=1),
-     *                     @OA\Property(property="name", type="string", example="Chocolate Birthday Cake")
-     *                 )
-     *             )
+     *             @OA\Property(property="item", ref="#/components/schemas/CartItemWithProduct")
      *         )
      *     ),
      *     @OA\Response(response=404, description="Product not found"),
@@ -116,7 +62,8 @@ class CartItemController extends Controller
                 'quantity' => 'required|integer|min:1'
             ]);
             
-            $cart = $this->getOrCreateCart($request);
+            $result = $this->cartService->getOrCreateCart($request);
+            $cart = $result['cart'];
             
             // Check if product exists and is in stock
             $product = Product::findOrFail($validated['product_id']);
@@ -149,10 +96,17 @@ class CartItemController extends Controller
             // Load the product relationship
             $cartItem->load('product');
             
-            return response()->json([
+            $response = response()->json([
                 'message' => 'Item added to cart',
                 'item' => $cartItem
             ]);
+            
+            // If there's a cookie to set, add it to the response
+            if ($result['cookie']) {
+                $response->cookie($result['cookie']);
+            }
+            
+            return $response;
             
         } catch (\Exception $e) {
             return response()->json([
@@ -189,12 +143,7 @@ class CartItemController extends Controller
      *         description="Item updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Cart item updated"),
-     *             @OA\Property(
-     *                 property="item",
-     *                 type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="quantity", type="integer", example=3)
-     *             )
+     *             @OA\Property(property="item", ref="#/components/schemas/CartItem")
      *         )
      *     ),
      *     @OA\Response(response=404, description="Cart item not found"),
@@ -208,7 +157,8 @@ class CartItemController extends Controller
                 'quantity' => 'required|integer|min:1'
             ]);
             
-            $cart = $this->getOrCreateCart($request);
+            $result = $this->cartService->getOrCreateCart($request);
+            $cart = $result['cart'];
             
             // Find the cart item
             $cartItem = CartItem::where('cart_id', $cart->id)
@@ -219,10 +169,17 @@ class CartItemController extends Controller
             $cartItem->quantity = $validated['quantity'];
             $cartItem->save();
             
-            return response()->json([
+            $response = response()->json([
                 'message' => 'Cart item updated',
                 'item' => $cartItem
             ]);
+            
+            // If there's a cookie to set, add it to the response
+            if ($result['cookie']) {
+                $response->cookie($result['cookie']);
+            }
+            
+            return $response;
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -264,7 +221,8 @@ class CartItemController extends Controller
     public function destroy(Request $request, $id)
     {
         try {
-            $cart = $this->getOrCreateCart($request);
+            $result = $this->cartService->getOrCreateCart($request);
+            $cart = $result['cart'];
             
             // Find and delete the cart item
             $cartItem = CartItem::where('cart_id', $cart->id)
@@ -273,9 +231,16 @@ class CartItemController extends Controller
                 
             $cartItem->delete();
             
-            return response()->json([
+            $response = response()->json([
                 'message' => 'Item removed from cart'
             ]);
+            
+            // If there's a cookie to set, add it to the response
+            if ($result['cookie']) {
+                $response->cookie($result['cookie']);
+            }
+            
+            return $response;
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([

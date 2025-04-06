@@ -5,6 +5,33 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *     schema="CartItem",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="cart_id", type="integer", example=1),
+ *     @OA\Property(property="product_id", type="integer", example=1),
+ *     @OA\Property(property="quantity", type="integer", example=2),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+
+/**
+ * @OA\Schema(
+ *     schema="CartItemWithProduct",
+ *     allOf={
+ *         @OA\Schema(ref="#/components/schemas/CartItem"),
+ *         @OA\Schema(
+ *             @OA\Property(
+ *                 property="product",
+ *                 type="object",
+ *                 ref="#/components/schemas/Product"
+ *             )
+ *         )
+ *     }
+ * )
+ */
 class CartItem extends Model
 {
     use HasFactory;

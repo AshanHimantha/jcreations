@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\CartItem;
+use App\Services\CartService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 /**
  * @OA\Tag(
@@ -15,57 +14,16 @@ use Illuminate\Support\Str;
  */
 class CartController extends Controller
 {
+    protected $cartService;
+    
     /**
-     * Get or create a cart for the current user/session.
+     * CartController constructor.
      */
-    private function getOrCreateCart(Request $request)
+    public function __construct(CartService $cartService)
     {
-        $firebaseUid = null;
-        $sessionId = $request->cookie('cart_session_id');
-        
-        // Check if user is authenticated with Firebase
-        if ($request->user()) {
-            $firebaseUid = $request->user()->firebase_uid;
-            
-            // Look for existing cart with this Firebase UID
-            $cart = Cart::where('firebase_uid', $firebaseUid)->first();
-            
-            // If user has a session cart, migrate it to their account
-            if (!$cart && $sessionId) {
-                $sessionCart = Cart::where('session_id', $sessionId)->first();
-                if ($sessionCart) {
-                    $sessionCart->firebase_uid = $firebaseUid;
-                    $sessionCart->session_id = null;
-                    $sessionCart->save();
-                    return $sessionCart;
-                }
-            }
-            
-            // Create new cart if none exists
-            if (!$cart) {
-                $cart = Cart::create(['firebase_uid' => $firebaseUid]);
-            }
-            
-            return $cart;
-        }
-        
-        // For guest users, use session ID
-        if (!$sessionId) {
-            $sessionId = Str::uuid()->toString();
-            
-            // Set cookie that expires in 30 days
-            cookie('cart_session_id', $sessionId, 43200);
-        }
-        
-        $cart = Cart::where('session_id', $sessionId)->first();
-        
-        if (!$cart) {
-            $cart = Cart::create(['session_id' => $sessionId]);
-        }
-        
-        return $cart;
+        $this->cartService = $cartService;
     }
-
+    
     /**
      * Display the user's cart.
      * 
@@ -85,20 +43,7 @@ class CartController extends Controller
      *             @OA\Property(
      *                 property="items",
      *                 type="array",
-     *                 @OA\Items(
-     *                     @OA\Property(property="id", type="integer", example=1),
-     *                     @OA\Property(property="quantity", type="integer", example=2),
-     *                     @OA\Property(property="subtotal", type="number", example=89.98),
-     *                     @OA\Property(
-     *                         property="product",
-     *                         type="object",
-     *                         @OA\Property(property="id", type="integer", example=1),
-     *                         @OA\Property(property="name", type="string", example="Chocolate Birthday Cake"),
-     *                         @OA\Property(property="price", type="number", example=45.99),
-     *                         @OA\Property(property="discount_percentage", type="number", example=0),
-     *                         @OA\Property(property="images", type="array", @OA\Items(type="string")),
-     *                     )
-     *                 )
+     *                 @OA\Items(ref="#/components/schemas/CartItem")
      *             )
      *         )
      *     )
@@ -106,12 +51,20 @@ class CartController extends Controller
      */
     public function index(Request $request)
     {
-        $cart = $this->getOrCreateCart($request);
+        $result = $this->cartService->getOrCreateCart($request);
+        $cart = $result['cart'];
         
         // Load cart items with their products
         $cart->load('items.product');
         
-        return response()->json($cart);
+        $response = response()->json($cart);
+        
+        // If there's a cookie to set, add it to the response
+        if ($result['cookie']) {
+            $response->cookie($result['cookie']);
+        }
+        
+        return $response;
     }
 
     /**
@@ -133,13 +86,21 @@ class CartController extends Controller
      */
     public function clear(Request $request)
     {
-        $cart = $this->getOrCreateCart($request);
+        $result = $this->cartService->getOrCreateCart($request);
+        $cart = $result['cart'];
         
         // Delete all cart items
         $cart->items()->delete();
         
-        return response()->json([
+        $response = response()->json([
             'message' => 'Cart cleared successfully'
         ]);
+        
+        // If there's a cookie to set, add it to the response
+        if ($result['cookie']) {
+            $response->cookie($result['cookie']);
+        }
+        
+        return $response;
     }
 }
