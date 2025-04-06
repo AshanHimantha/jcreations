@@ -11,6 +11,11 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    // Role constants (duplicating from UserController for consistency)
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_STAFF = 'staff';
+    public const ROLE_CASHIER = 'cashier';
+
     /**
      * The attributes that are mass assignable.
      *

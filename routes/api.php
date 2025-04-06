@@ -4,7 +4,7 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-
+use App\Models\User;
 
 Route::prefix('admin')->group(function () {
 
@@ -19,6 +19,7 @@ Route::prefix('admin')->group(function () {
         Route::put('/user/profile', [AuthController::class, 'updateProfile']);
 
 
+        Route::middleware(['role:' . User::ROLE_ADMIN])->group(function () {
         // User management routes
         Route::get('/users', [UserController::class, 'index']);
         Route::post('/users', [UserController::class, 'store']);
@@ -26,20 +27,30 @@ Route::prefix('admin')->group(function () {
         Route::put('/users/{user}', [UserController::class, 'update']);
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
+       });
 
-     
-    
+
+
+
+
+        Route::middleware(['role:' . User::ROLE_ADMIN . ',' . User::ROLE_STAFF])->group(function () {
+            // Add staff routes here
+        });
+        Route::middleware(['role:' . User::ROLE_ADMIN . ',' . User::ROLE_CASHIER])->group(function () {
+            // Add cashier routes here
+        });
+
       
     });
 });
 
 
 // Firebase authenticated routes
-Route::middleware(['firebase.auth'])->group(function () {
-    Route::get('/user', function (Request $request) {
-        return response()->json([
-            'message' => 'Authenticated!',
-            'user' => $request->attributes->get('firebaseUser'),
-        ]);
-    });
-});
+// Route::middleware(['firebase.auth'])->group(function () {
+//     Route::get('/user', function (Request $request) {
+//         return response()->json([
+//             'message' => 'Authenticated!',
+//             'user' => $request->attributes->get('firebaseUser'),
+//         ]);
+//     });
+// });
