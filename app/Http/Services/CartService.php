@@ -64,4 +64,54 @@ class CartService
         
         return ['cart' => $cart, 'cookie' => $newCookie];
     }
+
+    /**
+     * Sync session cart with user cart when a user logs in
+     * 
+     * @param string $firebaseUid The Firebase UID of the logged-in user
+     * @param string $sessionId The session ID of the anonymous user
+     * @return Cart The synced user cart
+     */
+    public function syncSessionCartWithUserCart(string $firebaseUid, string $sessionId)
+    {
+        // Find the session cart
+        $sessionCart = Cart::where('session_id', $sessionId)->first();
+        
+        // Find or create the user cart
+        $userCart = Cart::firstOrCreate(
+            ['firebase_uid' => $firebaseUid],
+            ['session_id' => null]
+        );
+        
+        // If there's a session cart with items, merge them into the user cart
+        if ($sessionCart && $sessionCart->items()->count() > 0) {
+            // Get all items from session cart
+            $sessionItems = $sessionCart->items()->get();
+            
+            foreach ($sessionItems as $item) {
+                // Check if this product already exists in user cart
+                $existingItem = $userCart->items()
+                    ->where('product_id', $item->product_id)
+                    ->first();
+                
+                if ($existingItem) {
+                    // Update quantity if product already in cart
+                    $existingItem->quantity += $item->quantity;
+                    $existingItem->save();
+                } else {
+                    // Create new cart item if product not in cart
+                    $userCart->items()->create([
+                        'product_id' => $item->product_id,
+                        'quantity' => $item->quantity
+                    ]);
+                }
+            }
+            
+            // Delete the session cart after merging
+            $sessionCart->items()->delete();
+            $sessionCart->delete();
+        }
+        
+        return $userCart;
+    }
 }
