@@ -28,10 +28,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => CheckRole::class,
         ]);
 
+        // Configure CORS middleware
         $middleware->api(append: [
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
         
+        // Register CORS middleware first to catch preflight requests
+        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
