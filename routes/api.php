@@ -23,6 +23,33 @@ Route::get('clear-cache', function () {
     return response()->json(['message' => 'All caches cleared successfully']);
 });
 
+Route::get('/test-cookie', function () {
+    return response()
+        ->json(['message' => 'Test cookie set successfully'])
+        ->cookie('test_cookie', 'cookie_value', 60); // Cookie valid for 60 minutes
+});
+
+// Add this route for direct cookie debugging
+Route::get('/debug-cookie', function () {
+    $cookie = cookie('debug_cookie', 'test_value', 60);
+    
+    // Output cookie details for debugging
+    return response()
+        ->json([
+            'message' => 'Cookie test',
+            'cookie_details' => [
+                'name' => $cookie->getName(),
+                'value' => $cookie->getValue(),
+                'minutes' => $cookie->getMaxAge() / 60,
+                'path' => $cookie->getPath(),
+                'domain' => $cookie->getDomain(),
+                'secure' => $cookie->isSecure(),
+                'httpOnly' => $cookie->isHttpOnly(),
+                'sameSite' => $cookie->getSameSite()
+            ]
+        ])
+        ->cookie($cookie);
+});
 
 // Public routes
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -37,8 +64,6 @@ Route::delete('/cart', [CartController::class, 'clear']);
 Route::post('/cart/items', [CartItemController::class, 'store']);
 Route::put('/cart/items/{id}', [CartItemController::class, 'update']);
 Route::delete('/cart/items/{id}', [CartItemController::class, 'destroy']);
-
-
 
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
