@@ -18,11 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('firebase', [
             FirebaseAuthMiddleware::class,
         ]);
-        
-        // Add Sanctum middleware to API group
-        $middleware->prependToGroup('api', [
-            EnsureFrontendRequestsAreStateful::class,
-        ]);
+               
 
         $middleware->alias([
             'role' => CheckRole::class,
