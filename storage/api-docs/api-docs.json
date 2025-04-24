@@ -367,6 +367,42 @@
                 }
             }
         },
+        "/api/cart/{id}": {
+            "get": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Get cart by ID",
+                "description": "Returns a specific cart by ID",
+                "operationId": "557c72a5686912dee2512190ceb381c1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Cart ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cart contents",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cart"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cart not found"
+                    }
+                }
+            }
+        },
         "/api/cart/items": {
             "post": {
                 "tags": [
@@ -1329,29 +1365,66 @@
     },
     "components": {
         "schemas": {
+            "Cart": {
+                "title": "Cart",
+                "description": "Shopping cart model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "firebase_uid": {
+                        "type": "string",
+                        "example": "user123",
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 129.95
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CartItem"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "CartItem": {
                 "title": "Cart Item",
-                "description": "Cart item model",
+                "description": "Shopping cart item",
                 "properties": {
                     "id": {
                         "description": "Class CartItem",
                         "type": "integer",
-                        "format": "int64",
                         "example": 1
                     },
                     "cart_id": {
                         "type": "integer",
-                        "format": "int64",
                         "example": 1
                     },
                     "product_id": {
                         "type": "integer",
-                        "format": "int64",
-                        "example": 1
+                        "example": 101
                     },
                     "quantity": {
                         "type": "integer",
                         "example": 2
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 49.99
                     },
                     "created_at": {
                         "type": "string",

@@ -14,11 +14,12 @@ use OpenApi\Annotations as OA;
  * @OA\Schema(
  *     schema="CartItem",
  *     title="Cart Item",
- *     description="Cart item model",
- *     @OA\Property(property="id", type="integer", format="int64", example=1),
- *     @OA\Property(property="cart_id", type="integer", format="int64", example=1),
- *     @OA\Property(property="product_id", type="integer", format="int64", example=1),
+ *     description="Shopping cart item",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="cart_id", type="integer", example=1),
+ *     @OA\Property(property="product_id", type="integer", example=101),
  *     @OA\Property(property="quantity", type="integer", example=2),
+ *     @OA\Property(property="price", type="number", format="float", example=49.99),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
