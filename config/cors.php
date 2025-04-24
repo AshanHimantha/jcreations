@@ -15,13 +15,11 @@ return [
     |
     */
 
-    'paths' => ['api/*', '*'],
+    'paths' => ['api/*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        '*',  
-    ],
+    'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
@@ -31,6 +29,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,  // This is important for requests with credentials
+    'supports_credentials' => false,
 
 ];
