@@ -4,41 +4,32 @@ namespace App\Http\Services;
 
 use App\Models\Cart;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Str;
 
 class CartService
 {
-    const COOKIE_NAME = 'cart_session_id';
-    const COOKIE_EXPIRY = 43200; // 30 days in minutes
-    
     /**
-     * Get or create a cart for the current user/session.
+     * Get or create a cart based on provided data.
      *
      * @param Request $request
-     * @return array Contains the cart model and a cookie if one was created
+     * @return array Contains the cart model
      */
     public function getOrCreateCart(Request $request)
     {
-        $firebaseUid = null;
-        $sessionId = $request->cookie(self::COOKIE_NAME);
-        $newCookie = null;
-        
-        // Check if user is authenticated with Firebase
+        // For authenticated users, use firebase_uid
         if ($request->user()) {
             $firebaseUid = $request->user()->firebase_uid;
             
             // Look for existing cart with this Firebase UID
             $cart = Cart::where('firebase_uid', $firebaseUid)->first();
             
-            // If user has a session cart, migrate it to their account
-            if (!$cart && $sessionId) {
-                $sessionCart = Cart::where('session_id', $sessionId)->first();
-                if ($sessionCart) {
-                    $sessionCart->firebase_uid = $firebaseUid;
-                    $sessionCart->session_id = null;
-                    $sessionCart->save();
-                    return ['cart' => $sessionCart, 'cookie' => null];
+            // If user has a cart_id in request, try to merge it
+            $cartId = $request->json('cart_id');
+            if (!$cart && $cartId) {
+                $anonymousCart = Cart::find($cartId);
+                if ($anonymousCart) {
+                    $anonymousCart->firebase_uid = $firebaseUid;
+                    $anonymousCart->save();
+                    return ['cart' => $anonymousCart];
                 }
             }
             
@@ -47,48 +38,49 @@ class CartService
                 $cart = Cart::create(['firebase_uid' => $firebaseUid]);
             }
             
-            return ['cart' => $cart, 'cookie' => null];
+            return ['cart' => $cart];
         }
         
-        // For guest users, use session ID
-        if (!$sessionId) {
-            $sessionId = Str::uuid()->toString();
-            $newCookie = Cookie::make(self::COOKIE_NAME, $sessionId, self::COOKIE_EXPIRY);
+        // For guests, use cart_id from request
+        $cartId = $request->json('cart_id');
+        
+        // Try to find the cart
+        if ($cartId) {
+            $cart = Cart::find($cartId);
+            if ($cart) {
+                return ['cart' => $cart];
+            }
         }
         
-        $cart = Cart::where('session_id', $sessionId)->first();
+        // Create a new cart if none found
+        $cart = Cart::create();
         
-        if (!$cart) {
-            $cart = Cart::create(['session_id' => $sessionId]);
-        }
-        
-        return ['cart' => $cart, 'cookie' => $newCookie];
+        return ['cart' => $cart];
     }
 
     /**
-     * Sync session cart with user cart when a user logs in
+     * Sync anonymous cart with user cart when a user logs in
      * 
      * @param string $firebaseUid The Firebase UID of the logged-in user
-     * @param string $sessionId The session ID of the anonymous user
+     * @param int $cartId The ID of the anonymous cart
      * @return Cart The synced user cart
      */
-    public function syncSessionCartWithUserCart(string $firebaseUid, string $sessionId)
+    public function syncCartWithUserCart(string $firebaseUid, int $cartId)
     {
-        // Find the session cart
-        $sessionCart = Cart::where('session_id', $sessionId)->first();
+        // Find the anonymous cart
+        $anonymousCart = Cart::find($cartId);
         
         // Find or create the user cart
         $userCart = Cart::firstOrCreate(
-            ['firebase_uid' => $firebaseUid],
-            ['session_id' => null]
+            ['firebase_uid' => $firebaseUid]
         );
         
-        // If there's a session cart with items, merge them into the user cart
-        if ($sessionCart && $sessionCart->items()->count() > 0) {
-            // Get all items from session cart
-            $sessionItems = $sessionCart->items()->get();
+        // If there's an anonymous cart with items, merge them into the user cart
+        if ($anonymousCart && $anonymousCart->items()->count() > 0) {
+            // Get all items from anonymous cart
+            $anonymousItems = $anonymousCart->items()->get();
             
-            foreach ($sessionItems as $item) {
+            foreach ($anonymousItems as $item) {
                 // Check if this product already exists in user cart
                 $existingItem = $userCart->items()
                     ->where('product_id', $item->product_id)
@@ -107,9 +99,9 @@ class CartService
                 }
             }
             
-            // Delete the session cart after merging
-            $sessionCart->items()->delete();
-            $sessionCart->delete();
+            // Delete the anonymous cart after merging
+            $anonymousCart->items()->delete();
+            $anonymousCart->delete();
         }
         
         return $userCart;

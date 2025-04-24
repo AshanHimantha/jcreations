@@ -38,8 +38,6 @@ Route::post('/cart/items', [CartItemController::class, 'store']);
 Route::put('/cart/items/{id}', [CartItemController::class, 'update']);
 Route::delete('/cart/items/{id}', [CartItemController::class, 'destroy']);
 
-
-
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 

@@ -33,14 +33,16 @@ class CartItemController extends Controller
      * @OA\Post(
      *     path="/api/cart/items",
      *     summary="Add item to cart",
-     *     description="Adds a product to the shopping cart",
+     *     description="Adds a product to the shopping cart. Requires cart_id for guest users.",
      *     tags={"Cart Items"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"product_id", "quantity"},
      *             @OA\Property(property="product_id", type="integer", example=1),
-     *             @OA\Property(property="quantity", type="integer", example=2)
+     *             @OA\Property(property="quantity", type="integer", example=2),
+     *             @OA\Property(property="cart_id", type="integer", nullable=true, example=1,
+     *                          description="Required for guest users to identify their cart")
      *         )
      *     ),
      *     @OA\Response(
@@ -48,7 +50,9 @@ class CartItemController extends Controller
      *         description="Item added to cart",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Item added to cart"),
-     *             @OA\Property(property="item", ref="#/components/schemas/CartItemWithProduct")
+     *             @OA\Property(property="item", ref="#/components/schemas/CartItemWithProduct"),
+     *             @OA\Property(property="cart_id", type="integer", example=1,
+     *                          description="Store this ID for future cart operations")
      *         )
      *     ),
      *     @OA\Response(response=404, description="Product not found"),
@@ -97,17 +101,11 @@ class CartItemController extends Controller
             // Load the product relationship
             $cartItem->load('product');
             
-            $response = response()->json([
+            return response()->json([
                 'message' => 'Item added to cart',
-                'item' => $cartItem
+                'item' => $cartItem,
+                'cart_id' => $cart->id
             ]);
-            
-            // If there's a cookie to set, add it to the response
-            if ($result['cookie']) {
-                $response->cookie($result['cookie']);
-            }
-            
-            return $response;
             
         } catch (\Exception $e) {
             return response()->json([
@@ -123,7 +121,7 @@ class CartItemController extends Controller
      * @OA\Put(
      *     path="/api/cart/items/{id}",
      *     summary="Update cart item",
-     *     description="Updates the quantity of an item in the cart",
+     *     description="Updates the quantity of an item in the cart. Requires cart_id for guest users.",
      *     tags={"Cart Items"},
      *     @OA\Parameter(
      *         name="id",
@@ -136,7 +134,9 @@ class CartItemController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"quantity"},
-     *             @OA\Property(property="quantity", type="integer", example=3)
+     *             @OA\Property(property="quantity", type="integer", example=3),
+     *             @OA\Property(property="cart_id", type="integer", nullable=true, example=1,
+     *                          description="Required for guest users to identify their cart")
      *         )
      *     ),
      *     @OA\Response(
@@ -144,7 +144,9 @@ class CartItemController extends Controller
      *         description="Item updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Cart item updated"),
-     *             @OA\Property(property="item", ref="#/components/schemas/CartItem")
+     *             @OA\Property(property="item", ref="#/components/schemas/CartItem"),
+     *             @OA\Property(property="cart_id", type="integer", example=1,
+     *                          description="Store this ID for future cart operations")
      *         )
      *     ),
      *     @OA\Response(response=404, description="Cart item not found"),
@@ -170,17 +172,11 @@ class CartItemController extends Controller
             $cartItem->quantity = $validated['quantity'];
             $cartItem->save();
             
-            $response = response()->json([
+            return response()->json([
                 'message' => 'Cart item updated',
-                'item' => $cartItem
+                'item' => $cartItem,
+                'cart_id' => $cart->id
             ]);
-            
-            // If there's a cookie to set, add it to the response
-            if ($result['cookie']) {
-                $response->cookie($result['cookie']);
-            }
-            
-            return $response;
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -200,7 +196,7 @@ class CartItemController extends Controller
      * @OA\Delete(
      *     path="/api/cart/items/{id}",
      *     summary="Remove item from cart",
-     *     description="Removes an item from the shopping cart",
+     *     description="Removes an item from the shopping cart. Requires cart_id for guest users.",
      *     tags={"Cart Items"},
      *     @OA\Parameter(
      *         name="id",
@@ -209,11 +205,20 @@ class CartItemController extends Controller
      *         required=true,
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="cart_id", type="integer", nullable=true, example=1,
+     *                          description="Required for guest users to identify their cart")
+     *         )
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Item removed successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Item removed from cart")
+     *             @OA\Property(property="message", type="string", example="Item removed from cart"),
+     *             @OA\Property(property="cart_id", type="integer", example=1,
+     *                          description="Store this ID for future cart operations")
      *         )
      *     ),
      *     @OA\Response(response=404, description="Cart item not found")
@@ -232,16 +237,10 @@ class CartItemController extends Controller
                 
             $cartItem->delete();
             
-            $response = response()->json([
-                'message' => 'Item removed from cart'
+            return response()->json([
+                'message' => 'Item removed from cart',
+                'cart_id' => $cart->id
             ]);
-            
-            // If there's a cookie to set, add it to the response
-            if ($result['cookie']) {
-                $response->cookie($result['cookie']);
-            }
-            
-            return $response;
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
