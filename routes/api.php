@@ -33,6 +33,7 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 
 
 Route::get('/cart', [CartController::class, 'index']);
+Route::get('/cart/{id}', [CartController::class, 'show']);
 Route::delete('/cart', [CartController::class, 'clear']);
 Route::post('/cart/items', [CartItemController::class, 'store']);
 Route::put('/cart/items/{id}', [CartItemController::class, 'update']);

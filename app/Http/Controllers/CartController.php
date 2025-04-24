@@ -106,4 +106,41 @@ class CartController extends Controller
             'cart_id' => $cart->id
         ]);
     }
+
+    /**
+     * Display a specific cart by ID.
+     * 
+     * @OA\Get(
+     *     path="/api/cart/{id}",
+     *     summary="Get cart by ID",
+     *     description="Returns a specific cart by ID",
+     *     tags={"Cart"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Cart ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Cart contents",
+     *         @OA\JsonContent(ref="#/components/schemas/Cart")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cart not found"
+     *     )
+     * )
+     */
+    public function show($id)
+    {
+        $cart = Cart::with('items.product')->find($id);
+        
+        if (!$cart) {
+            return response()->json(['message' => 'Cart not found'], 404);
+        }
+        
+        return response()->json($cart);
+    }
 }
