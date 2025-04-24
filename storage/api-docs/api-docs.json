@@ -263,8 +263,26 @@
                     "Cart"
                 ],
                 "summary": "Get cart contents",
-                "description": "Returns the current cart with all items",
+                "description": "Returns the current cart with all items. Requires cart_id for guest users.",
                 "operationId": "0652f94dde92e36bbb3c461356ce1d7b",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "cart_id": {
+                                        "description": "Required for guest users to identify their cart",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Cart contents",
@@ -279,10 +297,6 @@
                                         "firebase_uid": {
                                             "type": "string",
                                             "example": "user123",
-                                            "nullable": true
-                                        },
-                                        "session_id": {
-                                            "type": "string",
                                             "nullable": true
                                         },
                                         "total": {
@@ -308,8 +322,26 @@
                     "Cart"
                 ],
                 "summary": "Clear cart",
-                "description": "Removes all items from the cart",
+                "description": "Removes all items from the cart. Requires cart_id for guest users.",
                 "operationId": "c11937b9c6a767730b1dc083d3d13e96",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "cart_id": {
+                                        "description": "Required for guest users to identify their cart",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Cart cleared successfully",
@@ -320,6 +352,11 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Cart cleared successfully"
+                                        },
+                                        "cart_id": {
+                                            "description": "Store this ID for future cart operations",
+                                            "type": "integer",
+                                            "example": 1
                                         }
                                     },
                                     "type": "object"
@@ -336,7 +373,7 @@
                     "Cart Items"
                 ],
                 "summary": "Add item to cart",
-                "description": "Adds a product to the shopping cart",
+                "description": "Adds a product to the shopping cart. Requires cart_id for guest users.",
                 "operationId": "584c30d7a890fd66597947dba9d9fbd1",
                 "requestBody": {
                     "required": true,
@@ -355,6 +392,12 @@
                                     "quantity": {
                                         "type": "integer",
                                         "example": 2
+                                    },
+                                    "cart_id": {
+                                        "description": "Required for guest users to identify their cart",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -375,6 +418,11 @@
                                         },
                                         "item": {
                                             "$ref": "#/components/schemas/CartItemWithProduct"
+                                        },
+                                        "cart_id": {
+                                            "description": "Store this ID for future cart operations",
+                                            "type": "integer",
+                                            "example": 1
                                         }
                                     },
                                     "type": "object"
@@ -397,7 +445,7 @@
                     "Cart Items"
                 ],
                 "summary": "Update cart item",
-                "description": "Updates the quantity of an item in the cart",
+                "description": "Updates the quantity of an item in the cart. Requires cart_id for guest users.",
                 "operationId": "103627d0762186830290d892b3e990d5",
                 "parameters": [
                     {
@@ -423,6 +471,12 @@
                                     "quantity": {
                                         "type": "integer",
                                         "example": 3
+                                    },
+                                    "cart_id": {
+                                        "description": "Required for guest users to identify their cart",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -443,6 +497,11 @@
                                         },
                                         "item": {
                                             "$ref": "#/components/schemas/CartItem"
+                                        },
+                                        "cart_id": {
+                                            "description": "Store this ID for future cart operations",
+                                            "type": "integer",
+                                            "example": 1
                                         }
                                     },
                                     "type": "object"
@@ -463,7 +522,7 @@
                     "Cart Items"
                 ],
                 "summary": "Remove item from cart",
-                "description": "Removes an item from the shopping cart",
+                "description": "Removes an item from the shopping cart. Requires cart_id for guest users.",
                 "operationId": "3a2a1dade9e81ef8d4f58b6bc8384549",
                 "parameters": [
                     {
@@ -477,6 +536,24 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "cart_id": {
+                                        "description": "Required for guest users to identify their cart",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Item removed successfully",
@@ -487,6 +564,11 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Item removed from cart"
+                                        },
+                                        "cart_id": {
+                                            "description": "Store this ID for future cart operations",
+                                            "type": "integer",
+                                            "example": 1
                                         }
                                     },
                                     "type": "object"
