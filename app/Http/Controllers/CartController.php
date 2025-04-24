@@ -31,15 +31,21 @@ class CartController extends Controller
      * @OA\Get(
      *     path="/api/cart",
      *     summary="Get cart contents",
-     *     description="Returns the current cart with all items",
+     *     description="Returns the current cart with all items. Requires cart_id for guest users.",
      *     tags={"Cart"},
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="cart_id", type="integer", nullable=true, example=1, 
+     *                          description="Required for guest users to identify their cart")
+     *         )
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Cart contents",
      *         @OA\JsonContent(
      *             @OA\Property(property="id", type="integer", example=1),
      *             @OA\Property(property="firebase_uid", type="string", nullable=true, example="user123"),
-     *             @OA\Property(property="session_id", type="string", nullable=true),
      *             @OA\Property(property="total", type="number", example=129.95),
      *             @OA\Property(
      *                 property="items",
@@ -58,14 +64,7 @@ class CartController extends Controller
         // Load cart items with their products
         $cart->load('items.product');
         
-        $response = response()->json($cart);
-        
-        // If there's a cookie to set, add it to the response
-        if ($result['cookie']) {
-            $response->cookie($result['cookie']);
-        }
-        
-        return $response;
+        return response()->json($cart);
     }
 
     /**
@@ -74,13 +73,22 @@ class CartController extends Controller
      * @OA\Delete(
      *     path="/api/cart",
      *     summary="Clear cart",
-     *     description="Removes all items from the cart",
+     *     description="Removes all items from the cart. Requires cart_id for guest users.",
      *     tags={"Cart"},
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="cart_id", type="integer", nullable=true, example=1,
+     *                          description="Required for guest users to identify their cart")
+     *         )
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Cart cleared successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Cart cleared successfully")
+     *             @OA\Property(property="message", type="string", example="Cart cleared successfully"),
+     *             @OA\Property(property="cart_id", type="integer", example=1,
+     *                          description="Store this ID for future cart operations")
      *         )
      *     )
      * )
@@ -93,15 +101,9 @@ class CartController extends Controller
         // Delete all cart items
         $cart->items()->delete();
         
-        $response = response()->json([
-            'message' => 'Cart cleared successfully'
+        return response()->json([
+            'message' => 'Cart cleared successfully',
+            'cart_id' => $cart->id
         ]);
-        
-        // If there's a cookie to set, add it to the response
-        if ($result['cookie']) {
-            $response->cookie($result['cookie']);
-        }
-        
-        return $response;
     }
 }

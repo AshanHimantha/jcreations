@@ -19,22 +19,16 @@ return Application::configure(basePath: dirname(__DIR__))
             FirebaseAuthMiddleware::class,
         ]);
         
-        // Add Sanctum middleware to API group
-        $middleware->prependToGroup('api', [
-            EnsureFrontendRequestsAreStateful::class,
-        ]);
+        // // Add Sanctum middleware to API group
+        // $middleware->prependToGroup('api', [
+        //     EnsureFrontendRequestsAreStateful::class,
+        // ]);
 
         $middleware->alias([
             'role' => CheckRole::class,
         ]);
 
-        // Configure CORS middleware
-        $middleware->api(append: [
-            \Illuminate\Http\Middleware\HandleCors::class,
-        ]);
         
-        // Register CORS middleware first to catch preflight requests
-        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
