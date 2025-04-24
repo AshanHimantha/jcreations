@@ -63,7 +63,7 @@ Route::prefix('admin')->group(function () {
             // Protected product management routes
             Route::get('/products', [ProductController::class, 'adminIndex']);
             Route::post('/products', [ProductController::class, 'store']);
-            Route::post('/products/{product}', [ProductController::class, 'update']);
+            Route::put('/products/{product}', [ProductController::class, 'update']);
             Route::delete('/products/{product}', [ProductController::class, 'destroy']);
         });
 
