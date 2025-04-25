@@ -144,6 +144,7 @@ class OrderController extends Controller
             'address' => 'required|string|max:255',
             'firebase_uid' => 'nullable|string|max:128',
             'req_datetime' => 'nullable|date',
+            'shipping_charge' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -198,6 +199,23 @@ class OrderController extends Controller
             ];
         }
 
+        // Generate payment gateway hash
+        $merchant_id = '1221046';
+        $merchant_secret = config('services.payment_gateway.merchant_secret', 'YOUR_DEFAULT_SECRET'); // Get from config
+        $order_id = $order->id;
+        $amount = $totalWithShipping;
+        $currency = 'LKR';
+        
+        $hash = strtoupper(
+            md5(
+                $merchant_id . 
+                $order_id . 
+                number_format($amount, 2, '.', '') . 
+                $currency .  
+                strtoupper(md5($merchant_secret)) 
+            ) 
+        );
+
         // Clear the cart after order is created
         $cart->items()->delete();
 
@@ -210,6 +228,13 @@ class OrderController extends Controller
             'shipping_charge' => number_format($shippingCharge, 2),
             'total_with_shipping' => number_format($totalWithShipping, 2),
             'items' => $orderItems,
+            'payment_data' => [
+                'merchant_id' => $merchant_id,
+                'order_id' => $order_id,
+                'amount' => number_format($amount, 2, '.', ''),
+                'currency' => $currency,
+                'hash' => $hash
+            ]
         ], 201);
     }
 

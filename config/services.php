@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'payment_gateway' => [
+        'merchant_id' => env('PAYMENT_GATEWAY_MERCHANT_ID', '1221046'),
+        'merchant_secret' => env('PAYMENT_GATEWAY_MERCHANT_SECRET', ''),
+    ],
+
 ];
