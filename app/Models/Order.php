@@ -18,15 +18,18 @@ class Order extends Model
         'status',
         'req_datetime',
         'payment_type',
+        'payment_status', // Add this line
         'total_amount',
+        'shipping_charge',
         'order_datetime',
-        'firebase_uid', // Added firebase_uid to fillable attributes
+        'firebase_uid',
     ];
 
     protected $casts = [
         'order_datetime' => 'datetime',
         'req_datetime' => 'datetime',
         'total_amount' => 'decimal:2',
+        'shipping_charge' => 'decimal:2',
     ];
 
     /**

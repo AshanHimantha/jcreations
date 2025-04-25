@@ -53,6 +53,14 @@ Route::put('/orders/{id}/status', [OrderController::class, 'updateOrderStatus'])
 Route::get('/orders', [OrderController::class, 'getAllOrders']);
 Route::delete('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']);
 
+
+// Add these routes to your existing routes
+Route::post('/orders/online', [OrderController::class, 'createOnlineOrder']);
+Route::put('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus']);
+
+
+
+
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
