@@ -18,11 +18,12 @@ class Order extends Model
         'status',
         'req_datetime',
         'payment_type',
-        'payment_status', // Add this line
+        'payment_status', 
         'total_amount',
         'shipping_charge',
         'order_datetime',
         'firebase_uid',
+        'cart_id',  // Added cart_id
     ];
 
     protected $casts = [

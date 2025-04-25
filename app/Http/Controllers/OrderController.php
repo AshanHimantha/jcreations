@@ -111,20 +111,25 @@ class OrderController extends Controller
     /**
      * @OA\Post(
      *     path="/api/orders/online",
-     *     summary="Generate payment hash for online order",
+     *     summary="Create a new online order with card payment",
      *     tags={"Orders"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"cart_id"},
+     *             required={"cart_id", "customer_name", "contact_number", "city", "address"},
      *             @OA\Property(property="cart_id", type="integer", example=1),
      *             @OA\Property(property="customer_name", type="string", example="John Doe"),
-     *             @OA\Property(property="shipping_charge", type="number", format="float", example=300.00, nullable=true)
+     *             @OA\Property(property="contact_number", type="string", example="1234567890"),
+     *             @OA\Property(property="city", type="string", example="New York"),
+     *             @OA\Property(property="address", type="string", example="123 Main St"),
+     *             @OA\Property(property="firebase_uid", type="string", example="abc123xyz", nullable=true),
+     *             @OA\Property(property="req_datetime", type="string", format="date-time", nullable=true),
+     *             @OA\Property(property="shipping_charge", type="number", format="float", example=10.00, nullable=true)
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
-     *         description="Payment hash generated successfully"
+     *         response=201,
+     *         description="Order created successfully"
      *     ),
      *     @OA\Response(response=422, description="Validation errors")
      * )
@@ -133,6 +138,12 @@ class OrderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'cart_id' => 'required|exists:carts,id',
+            'customer_name' => 'required|string|max:255',
+            'contact_number' => 'required|string|max:20',
+            'city' => 'required|string|max:100',
+            'address' => 'required|string|max:255',
+            'firebase_uid' => 'nullable|string|max:128',
+            'req_datetime' => 'nullable|date',
             'shipping_charge' => 'nullable|numeric|min:0',
         ]);
 
@@ -153,9 +164,34 @@ class OrderController extends Controller
         // Calculate total amount including shipping
         $totalWithShipping = $cart->total + $shippingCharge;
 
-        // Prepare order items for response
+        // Create order
+        $order = Order::create([
+            'customer_name' => $request->customer_name,
+            'contact_number' => $request->contact_number,
+            'city' => $request->city,
+            'address' => $request->address,
+            'firebase_uid' => $request->firebase_uid,
+            'status' => 'pending',
+            'req_datetime' => $request->req_datetime ?? now(),
+            'payment_type' => 'card_payment',
+            'payment_status' => 'pending',  // Default payment status is pending
+            'total_amount' => $cart->total,
+            'shipping_charge' => $shippingCharge,
+            'order_datetime' => now(),
+            'cart_id' => $cart->id, // Store cart_id for later deletion
+        ]);
+
+        // Create order items from cart items
         $orderItems = [];
         foreach ($cart->items as $item) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_name' => $item->product->name,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->product->price * ((100 - $item->product->discount_percentage) / 100),
+                'total_price' => $item->subtotal,
+            ]);
+            
             $orderItems[] = [
                 'product_name' => $item->product->name,
                 'quantity' => $item->quantity,
@@ -166,8 +202,8 @@ class OrderController extends Controller
 
         // Generate payment gateway hash
         $merchant_id = '1221046';
-        $merchant_secret = config('services.payment_gateway.merchant_secret', 'YOUR_DEFAULT_SECRET');
-        $order_id = uniqid('pre_'); // Temporary order ID for hash generation
+        $merchant_secret = config('services.payment_gateway.merchant_secret', 'YOUR_DEFAULT_SECRET'); // Get from config
+        $order_id = $order->id;
         $amount = $totalWithShipping;
         $currency = 'LKR';
         
@@ -181,10 +217,14 @@ class OrderController extends Controller
             ) 
         );
 
+    
+
         return response()->json([
-            'message' => 'Payment hash generated successfully',
-            'cart_id' => $cart->id,
-            'total_amount' => number_format($cart->total, 2),
+            'message' => 'Online order created successfully',
+            'order_id' => $order->id,
+            'status' => $order->status,
+            'payment_status' => $order->payment_status,
+            'total_amount' => number_format($order->total_amount, 2),
             'shipping_charge' => number_format($shippingCharge, 2),
             'total_with_shipping' => number_format($totalWithShipping, 2),
             'items' => $orderItems,
@@ -195,7 +235,7 @@ class OrderController extends Controller
                 'currency' => $currency,
                 'hash' => $hash
             ]
-        ], 200);
+        ], 201);
     }
 
     /**

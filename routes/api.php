@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PayHereNotificationController;
 use App\Models\User;
 
 
@@ -99,3 +100,6 @@ Route::prefix('admin')->group(function () {
         });
     });
 });
+
+// PayHere notification endpoint
+Route::post('/payhere/notify', [PayHereNotificationController::class, 'handleNotification'])->name('payhere.notify');
