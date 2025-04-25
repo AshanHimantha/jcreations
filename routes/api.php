@@ -23,13 +23,18 @@ Route::get('clear-cache', function () {
     return response()->json(['message' => 'All caches cleared successfully']);
 });
 
+Route::get('migrate', function () {
+    Artisan::call('migrate');
+    return response()->json(['message' => 'Migration completed successfully']);
+});
+
 
 // Public routes
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{product}', [ProductController::class, 'show']);
+Route::get('/products/{limit?}', [ProductController::class, 'index']);
+Route::get('/products/search/{limit?}', [ProductController::class, 'search']);
 
 
 Route::get('/cart', [CartController::class, 'index']);

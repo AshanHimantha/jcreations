@@ -19,10 +19,17 @@ class ProductController extends Controller
      * Display a listing of products.
      * 
      * @OA\Get(
-     *     path="/api/products",
-     *     summary="Get all products",
-     *     description="Returns a list of all active products (public endpoint)",
+     *     path="/api/products/{limit?}",
+     *     summary="Get all products with optional limit",
+     *     description="Returns a list of all active products (public endpoint, default limit is 20)",
      *     tags={"Products"},
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="path",
+     *         description="Maximum number of products to return (default: 20, max: 100)",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=20)
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="List of products",
@@ -49,10 +56,15 @@ class ProductController extends Controller
      *     )
      * )
      */
-    public function index()
+    public function index($limit = 20)
     {
+        // Validate and constrain the limit
+        $limit = is_numeric($limit) ? (int)$limit : 20;  
+        $limit = min(max($limit, 1), 100);  // Between 1 and 100
+        
         $products = Product::with('category')
                     ->where('status', '!=', 'deactive')
+                    ->limit($limit)
                     ->get();
         
         return response()->json($products);
@@ -412,5 +424,106 @@ class ProductController extends Controller
         
         $product->delete();
         return response()->json(null, 204);
+    }
+    /**
+     * Search for products by various criteria.
+     * 
+     * @OA\Get(
+     *     path="/api/products/search/{limit?}",
+     *     summary="Search products with optional limit",
+     *     description="Search products by name, category, price range or status",
+     *     tags={"Products"},
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="path",
+     *         description="Maximum number of products to return (default: 20, max: 100)",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=20)
+     *     ),
+     *     @OA\Parameter(
+     *         name="q",
+     *         in="query",
+     *         description="Search term for product name or description",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="category_id",
+     *         in="query",
+     *         description="Filter by category ID",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="min_price",
+     *         in="query",
+     *         description="Minimum price",
+     *         required=false,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Parameter(
+     *         name="max_price",
+     *         in="query",
+     *         description="Maximum price",
+     *         required=false,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Product status",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"in_stock", "out_of_stock"})
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of products matching search criteria",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Product")
+     *         )
+     *     )
+     * )
+     */
+    public function search(Request $request, $limit = 20)
+    {
+        // Validate and constrain the limit
+        $limit = is_numeric($limit) ? (int)$limit : 20;
+        $limit = min(max($limit, 1), 100);  // Between 1 and 100
+        
+        $query = Product::with('category')
+                ->where('status', '!=', 'deactive');
+        
+        // Search in name or description
+        if ($request->has('q')) {
+            $searchTerm = $request->input('q');
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhere('description', 'like', "%{$searchTerm}%");
+            });
+        }
+        
+        // Filter by category
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
+        
+        // Filter by price range
+        if ($request->has('min_price')) {
+            $query->where('price', '>=', $request->input('min_price'));
+        }
+        
+        if ($request->has('max_price')) {
+            $query->where('price', '<=', $request->input('max_price'));
+        }
+        
+        // Filter by status
+        if ($request->has('status')) {
+            $query->where('status', $request->input('status'));
+        }
+        
+        $products = $query->limit($limit)->get();
+        
+        return response()->json($products);
     }
 }
