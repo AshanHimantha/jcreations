@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartItemController;
@@ -43,6 +44,14 @@ Route::delete('/cart', [CartController::class, 'clear']);
 Route::post('/cart/items', [CartItemController::class, 'store']);
 Route::put('/cart/items/{id}', [CartItemController::class, 'update']);
 Route::delete('/cart/items/{id}', [CartItemController::class, 'destroy']);
+
+
+// Cash on Delivery routes
+Route::post('/orders/cod', [OrderController::class, 'createCodOrder']);
+Route::get('/orders/{id}', [OrderController::class, 'getOrder']);
+Route::put('/orders/{id}/status', [OrderController::class, 'updateOrderStatus']);
+Route::get('/orders', [OrderController::class, 'getAllOrders']);
+Route::delete('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']);
 
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
