@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Order extends Model
 {
@@ -13,7 +14,7 @@ class Order extends Model
     protected $fillable = [
         'customer_name',
         'contact_number',
-        'city',
+        'delivery_location_id', // Replace 'city' with this
         'address',
         'status',
         'req_datetime',
@@ -23,7 +24,7 @@ class Order extends Model
         'shipping_charge',
         'order_datetime',
         'firebase_uid',
-        'cart_id',  // Added cart_id
+        'cart_id',
     ];
 
     protected $casts = [
@@ -39,5 +40,13 @@ class Order extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get the delivery location for this order.
+     */
+    public function deliveryLocation(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryLocation::class, 'delivery_location_id');
     }
 }

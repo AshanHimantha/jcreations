@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\DeliveryLocation;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -50,7 +51,7 @@ class OrderController extends Controller
             'cart_id' => 'required|exists:carts,id',
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
-            'city' => 'required|string|max:100',
+            'city' => 'required|exists:delivery_locations,city,is_active,1',
             'address' => 'required|string|max:255',
             'firebase_uid' => 'nullable|string|max:128',
             'req_datetime' => 'nullable|date',
@@ -68,14 +69,17 @@ class OrderController extends Controller
             return response()->json(['error' => 'Cart not found or empty'], 404);
         }
 
-        // Get shipping charge or default to 0
-        $shippingCharge = $request->shipping_charge ?? 300;
+        // Get shipping charge from delivery location
+        $deliveryLocation = DeliveryLocation::where('city', $request->city)
+            ->where('is_active', true)
+            ->firstOrFail();
+        $shippingCharge = $deliveryLocation->shipping_charge;
 
         // Create order
         $order = Order::create([
             'customer_name' => $request->customer_name,
             'contact_number' => $request->contact_number,
-            'city' => $request->city,
+            'delivery_location_id' => $deliveryLocation->id,  // Use delivery_location_id instead of city
             'address' => $request->address,
             'firebase_uid' => $request->firebase_uid,
             'status' => 'pending',
@@ -140,7 +144,7 @@ class OrderController extends Controller
             'cart_id' => 'required|exists:carts,id',
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
-            'city' => 'required|string|max:100',
+            'city' => 'required|exists:delivery_locations,city,is_active,1',
             'address' => 'required|string|max:255',
             'firebase_uid' => 'nullable|string|max:128',
             'req_datetime' => 'nullable|date',
@@ -158,8 +162,11 @@ class OrderController extends Controller
             return response()->json(['error' => 'Cart not found or empty'], 404);
         }
 
-        // Get shipping charge or default to 300
-        $shippingCharge = $request->shipping_charge ?? 300;
+        // Get shipping charge from delivery location
+        $deliveryLocation = DeliveryLocation::where('city', $request->city)
+            ->where('is_active', true)
+            ->firstOrFail();
+        $shippingCharge = $deliveryLocation->shipping_charge;
 
         // Calculate total amount including shipping
         $totalWithShipping = $cart->total + $shippingCharge;
@@ -168,7 +175,7 @@ class OrderController extends Controller
         $order = Order::create([
             'customer_name' => $request->customer_name,
             'contact_number' => $request->contact_number,
-            'city' => $request->city,
+            'delivery_location_id' => $deliveryLocation->id,  // Use delivery_location_id instead of city
             'address' => $request->address,
             'firebase_uid' => $request->firebase_uid,
             'status' => 'pending',
