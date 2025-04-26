@@ -60,7 +60,7 @@ class PayHereNotificationController extends Controller
                 // Send SMS notification
                 try {
                     // Get recipient phone number from order
-                    $recipient = $order->phone_number; // Update this field name based on your Order model
+                    $recipient = $order->contact_number; // Update this field name based on your Order model
                     
                     $response = \Illuminate\Support\Facades\Http::post('https://app.text.lk/api/http/sms/send', [
                         'api_token' => '490|p1hxF1oYz3QxBTHQjuODsDjHVFPjQ59Tx7QU2o5i9f850b6f',
