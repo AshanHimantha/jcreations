@@ -12,7 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PayHereNotificationController;
 use App\Models\User;
 use App\Http\Controllers\DeliveryLocationController;
-
+use App\Http\Controllers\MaintenanceController;
 
 Route::get('create-storage-link', function () {
     Artisan::call('storage:link');
@@ -30,6 +30,8 @@ Route::get('migrate', function () {
     Artisan::call('migrate');
     return response()->json(['message' => 'Migration completed successfully']);
 });
+
+Route::get('/maintenance/cleanup', [MaintenanceController::class, 'cleanupOldData']);
 
 
 // Public routes

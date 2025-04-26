@@ -57,22 +57,53 @@ class PayHereNotificationController extends Controller
                     }
                 }
                 
+                // Send SMS notification
+                try {
+                    // Get recipient phone number from order
+                    $recipient = $order->phone_number; // Update this field name based on your Order model
+                    
+                    $response = \Illuminate\Support\Facades\Http::post('https://app.text.lk/api/http/sms/send', [
+                        'api_token' => '490|p1hxF1oYz3QxBTHQjuODsDjHVFPjQ59Tx7QU2o5i9f850b6f',
+                        'recipient' => $recipient,
+                        'sender_id' => 'TextLKDemo',
+                        'type' => 'plain',
+                        'message' => "Your order #{$order_id} has been successfully paid and confirmed. Thank you for your purchase!"
+                    ]);
+                    
+                    if ($response->successful()) {
+                        Log::info("SMS notification sent for order #{$order_id}");
+                    } else {
+                        Log::error("Failed to send SMS notification for order #{$order_id}: " . $response->body());
+                    }
+                } catch (\Exception $e) {
+                    Log::error("SMS notification error for order #{$order_id}: " . $e->getMessage());
+                }
+                
                 Log::info("Payment successful for order #{$order_id}. Cart deleted.");
                 return response('Payment notification processed successfully', 200);
             } else {
                 Log::error("Order #{$order_id} not found");
                 return response('Order not found', 404);
             }
-        } else {
-            // Log verification failure
-            if ($local_md5sig !== $md5sig) {
-                Log::warning("MD5 signature mismatch for order #{$order_id}");
-            }
-            if ($status_code != 2) {
-                Log::warning("Payment unsuccessful for order #{$order_id}, status code: {$status_code}");
-            }
-            
-            return response('Invalid signature or payment not successful', 400);
-        }
+            } else {
+                    // Log verification failure
+                    if ($local_md5sig !== $md5sig) {
+                        Log::warning("MD5 signature mismatch for order #{$order_id}");
+                    }
+                    if ($status_code != 2) {
+                        Log::warning("Payment unsuccessful for order #{$order_id}, status code: {$status_code}");
+                    }
+                    
+                    // Find and delete the order
+                    $order = Order::find($order_id);
+                    if ($order) {
+                        $order->delete();
+                        Log::info("Order #{$order_id} deleted due to payment verification failure");
+                    } else {
+                        Log::warning("Failed to delete order #{$order_id}: Order not found");
+                    }
+                    
+                    return response('Invalid signature or payment not successful', 400);
+                }
     }
 }
