@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PayHereNotificationController;
 use App\Models\User;
+use App\Http\Controllers\DeliveryLocationController;
 
 
 Route::get('create-storage-link', function () {
@@ -37,6 +38,10 @@ Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
 Route::get('/products/{limit?}', [ProductController::class, 'index']);
 Route::get('/products/search/{limit?}', [ProductController::class, 'search']);
+
+// locations
+Route::get('/locations', [DeliveryLocationController::class, 'index']);
+Route::get('/locations/{location}', [DeliveryLocationController::class, 'show']);
 
 
 Route::get('/cart', [CartController::class, 'index']);
@@ -89,6 +94,14 @@ Route::prefix('admin')->group(function () {
             Route::post('/products', [ProductController::class, 'store']);
             Route::put('/products/{product}', [ProductController::class, 'update']);
             Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+     
+            // Create, update, delete operations
+           Route::post('/locations', [DeliveryLocationController::class, 'store']);
+           Route::put('/locations/{location}', [DeliveryLocationController::class, 'update']);
+           Route::delete('/locations/{location}', [DeliveryLocationController::class, 'destroy']);
+     
+    
+     
         });
 
         Route::middleware(['role:' . User::ROLE_ADMIN . ',' . User::ROLE_STAFF])->group(function () {
@@ -103,3 +116,4 @@ Route::prefix('admin')->group(function () {
 
 // PayHere notification endpoint
 Route::post('/payhere/notify', [PayHereNotificationController::class, 'handleNotification'])->name('payhere.notify');
+
