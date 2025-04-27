@@ -2913,14 +2913,14 @@
                 }
             }
         },
-        "/api/admin/products": {
+        "/api/admin/products/limit/{limit}": {
             "get": {
                 "tags": [
                     "Products"
                 ],
                 "summary": "Get all products (including deactivated ones)",
                 "description": "Returns a list of all products (admin only)",
-                "operationId": "dc6790eba53ce526cf579d7f18625cf4",
+                "operationId": "947b95d08da896fa7691a5368b531d7b",
                 "responses": {
                     "200": {
                         "description": "List of all products",
@@ -2947,7 +2947,9 @@
                         "bearerAuth": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/admin/products": {
             "post": {
                 "tags": [
                     "Products"

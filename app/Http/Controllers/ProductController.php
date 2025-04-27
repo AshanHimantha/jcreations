@@ -74,7 +74,7 @@ class ProductController extends Controller
      * Display a listing of all products including deactivated ones (admin only).
      * 
      * @OA\Get(
-     *     path="/api/admin/products",
+     *     path="/api/admin/products/limit/{limit}",
      *     summary="Get all products (including deactivated ones)",
      *     description="Returns a list of all products (admin only)",
      *     tags={"Products"},
@@ -91,9 +91,21 @@ class ProductController extends Controller
      *     @OA\Response(response=403, description="Forbidden")
      * )
      */
-    public function adminIndex()
+    public function adminIndex($limit = null)
     {
-        $products = Product::with('category')->get();
+        if ($limit !== null) {
+            // Validate limit is a positive integer
+            $limit = is_numeric($limit) ? (int)$limit : 20;
+            $limit = max($limit, 1);  // Only enforce minimum value of 1
+            
+            $products = Product::with('category')
+                       ->limit($limit)
+                       ->get();
+        } else {
+            // Original behavior - get all products with no limit
+            $products = Product::with('category')->get();
+        }
+        
         return response()->json($products);
     }
 

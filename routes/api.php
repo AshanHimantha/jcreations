@@ -88,7 +88,7 @@ Route::prefix('admin')->group(function () {
             Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
             
             // Protected product management routes
-            Route::get('/products', [ProductController::class, 'adminIndex']);
+            Route::get('/products/limit/{limit}', [ProductController::class, 'adminIndex']);
             Route::post('/products', [ProductController::class, 'store']);
             Route::put('/products/{product}', [ProductController::class, 'update']);
             Route::delete('/products/{product}', [ProductController::class, 'destroy']);
