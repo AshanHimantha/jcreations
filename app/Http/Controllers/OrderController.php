@@ -749,11 +749,12 @@ class OrderController extends Controller
         // Order by created_at desc to get latest orders first
         $query->orderBy('created_at', 'desc');
         
-        // Limit results if specified, otherwise get all
+        // Limit results if specified, otherwise use default limit of 50
+        $defaultLimit = 10;
         if ($request->has('limit') && is_numeric($request->limit) && $request->limit > 0) {
             $orders = $query->take($request->limit)->get();
         } else {
-            $orders = $query->get();
+            $orders = $query->take($defaultLimit)->get();
         }
         
         return response()->json($orders, 200);
@@ -900,13 +901,14 @@ class OrderController extends Controller
         // Order by created_at desc to get latest orders first
         $query->orderBy('created_at', 'desc');
         
-        // Limit results if specified, otherwise get all
+        // Limit results if specified, otherwise use default limit of 50
+        $defaultLimit = 50;
         if ($request->has('limit') && is_numeric($request->limit) && $request->limit > 0) {
             $orders = $query->take($request->limit)->get();
         } else {
-            $orders = $query->get();
+            $orders = $query->take($defaultLimit)->get();
         }
-
+        
         return response()->json($orders, 200);
     }
 
