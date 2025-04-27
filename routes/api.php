@@ -57,14 +57,13 @@ Route::delete('/cart/items/{id}', [CartItemController::class, 'destroy']);
 // Cash on Delivery routes
 Route::post('/orders/cod', [OrderController::class, 'createCodOrder']);
 Route::get('/orders/{id}', [OrderController::class, 'getOrder']);
-Route::put('/orders/{id}/status', [OrderController::class, 'updateOrderStatus']);
-Route::get('/orders', [OrderController::class, 'getAllOrders']);
-Route::delete('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']);
+
+
 
 
 // Add these routes to your existing routes
 Route::post('/orders/online', [OrderController::class, 'createOnlineOrder']);
-Route::put('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus']);
+
 
 
 
@@ -102,8 +101,13 @@ Route::prefix('admin')->group(function () {
            Route::put('/locations/{location}', [DeliveryLocationController::class, 'update']);
            Route::delete('/locations/{location}', [DeliveryLocationController::class, 'destroy']);
      
-    
-     
+
+           Route::get('orders/search', [OrderController::class, 'searchOrders']);
+           Route::put('/orders/{id}/status', [OrderController::class, 'updateOrderStatus']);
+           Route::delete('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']);
+           Route::get('/orders', [OrderController::class, 'getAllOrders']);
+           Route::put('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus']);
+           
         });
 
         Route::middleware(['role:' . User::ROLE_ADMIN . ',' . User::ROLE_STAFF])->group(function () {
