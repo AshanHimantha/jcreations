@@ -2868,17 +2868,17 @@
                 ]
             }
         },
-        "/api/products/{product}": {
+        "/api/product/single/{id}": {
             "get": {
                 "tags": [
                     "Products"
                 ],
-                "summary": "Get product details",
-                "description": "Returns the details of a specific product (public endpoint)",
-                "operationId": "05f6ffcb49f47b4f4fc1a1c21ed60011",
+                "summary": "Get product details by ID",
+                "description": "Returns the details of a specific product by ID (public endpoint)",
+                "operationId": "50e72ab061ef1d46df684d2b947ca1b9",
                 "parameters": [
                     {
-                        "name": "product",
+                        "name": "id",
                         "in": "path",
                         "description": "Product ID",
                         "required": true,
