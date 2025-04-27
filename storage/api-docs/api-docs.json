@@ -257,6 +257,186 @@
                 ]
             }
         },
+        "/api/banner": {
+            "get": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Get active banner",
+                "description": "Returns the currently active banner",
+                "operationId": "getBanner",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Banner"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No active banner found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No active banner found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/banner": {
+            "post": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Upload a new banner",
+                "description": "Uploads a new banner and replaces any existing one",
+                "operationId": "storeBanner",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "image": {
+                                        "description": "Banner image file (max 2MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "title": {
+                                        "description": "Banner title",
+                                        "type": "string",
+                                        "example": "Summer Sale"
+                                    },
+                                    "subtitle": {
+                                        "description": "Banner subtitle",
+                                        "type": "string",
+                                        "example": "Up to 50% off"
+                                    },
+                                    "link": {
+                                        "description": "Banner link URL",
+                                        "type": "string",
+                                        "example": "https://example.com/sale"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Banner created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Banner created successfully"
+                                        },
+                                        "banner": {
+                                            "$ref": "#/components/schemas/Banner"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Delete active banner",
+                "description": "Deletes the currently active banner",
+                "operationId": "deleteBanner",
+                "responses": {
+                    "200": {
+                        "description": "Banner deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Banner deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No active banner found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No active banner found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/cart": {
             "get": {
                 "tags": [
@@ -3146,6 +3326,51 @@
     },
     "components": {
         "schemas": {
+            "Banner": {
+                "title": "Banner",
+                "description": "Banner model",
+                "properties": {
+                    "id": {
+                        "description": "Banner ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "image_path": {
+                        "description": "Path to the banner image",
+                        "type": "string"
+                    },
+                    "title": {
+                        "description": "Banner title",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "subtitle": {
+                        "description": "Banner subtitle",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "link": {
+                        "description": "Banner link URL",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "description": "Whether the banner is active",
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "description": "Creation date",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Last update date",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Cart": {
                 "title": "Cart",
                 "description": "Shopping cart model",
@@ -3337,6 +3562,10 @@
         {
             "name": "Authentication",
             "description": "API endpoints for user authentication"
+        },
+        {
+            "name": "Banners",
+            "description": "API endpoints for managing banners"
         },
         {
             "name": "Cart",

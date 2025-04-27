@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
@@ -59,6 +60,7 @@ Route::delete('/cart/items/{id}', [CartItemController::class, 'destroy']);
 Route::post('/orders/cod', [OrderController::class, 'createCodOrder']);
 Route::get('/orders/{id}', [OrderController::class, 'getOrder']);
 
+Route::get('/banner', [BannerController::class, 'show']);
 
 // Add these routes to your existing routes
 Route::post('/orders/online', [OrderController::class, 'createOnlineOrder']);
@@ -103,6 +105,8 @@ Route::prefix('admin')->group(function () {
            Route::get('/orders', [OrderController::class, 'getAllOrders']);
            Route::put('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus']);
            
+           Route::post('/banner', [BannerController::class, 'store']);
+           Route::delete('/banner', [BannerController::class, 'destroy']);
         });
 
         Route::middleware(['role:' . User::ROLE_ADMIN . ',' . User::ROLE_STAFF])->group(function () {
