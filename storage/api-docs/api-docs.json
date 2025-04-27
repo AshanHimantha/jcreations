@@ -950,6 +950,269 @@
                 ]
             }
         },
+        "/api/delivery-locations": {
+            "get": {
+                "tags": [
+                    "Delivery Locations"
+                ],
+                "summary": "Get list of all delivery locations",
+                "description": "Display a listing of the locations.",
+                "operationId": "9c9dd5ffdfa1d9ff6f742962d91a423f",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "locations": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/DeliveryLocation"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/delivery-locations": {
+            "post": {
+                "tags": [
+                    "Delivery Locations"
+                ],
+                "summary": "Create a new delivery location",
+                "description": "Store a newly created location in storage.",
+                "operationId": "dca0c3038fbec78ea591bf601366c894",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "city",
+                                    "shipping_charge"
+                                ],
+                                "properties": {
+                                    "city": {
+                                        "type": "string",
+                                        "example": "New York"
+                                    },
+                                    "shipping_charge": {
+                                        "type": "number",
+                                        "example": 10.5
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Location created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Location created successfully"
+                                        },
+                                        "location": {
+                                            "$ref": "#/components/schemas/DeliveryLocation"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/delivery-locations/{location}": {
+            "get": {
+                "tags": [
+                    "Delivery Locations"
+                ],
+                "summary": "Get a specific delivery location",
+                "description": "Display the specified location.",
+                "operationId": "02346c8b92e83de746b22a73da61f6e0",
+                "parameters": [
+                    {
+                        "name": "location",
+                        "in": "path",
+                        "description": "Delivery location ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "location": {
+                                            "$ref": "#/components/schemas/DeliveryLocation"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Location not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Delivery Locations"
+                ],
+                "summary": "Update a delivery location",
+                "description": "Update the specified location in storage.",
+                "operationId": "81a0cb7ae27d2590a25d7ac27f22947b",
+                "parameters": [
+                    {
+                        "name": "location",
+                        "in": "path",
+                        "description": "Delivery location ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "city",
+                                    "shipping_charge"
+                                ],
+                                "properties": {
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Chicago"
+                                    },
+                                    "shipping_charge": {
+                                        "type": "number",
+                                        "example": 15.75
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Location updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Location updated successfully"
+                                        },
+                                        "location": {
+                                            "$ref": "#/components/schemas/DeliveryLocation"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    },
+                    "404": {
+                        "description": "Location not found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Delivery Locations"
+                ],
+                "summary": "Delete a delivery location",
+                "description": "Remove the specified location from storage.",
+                "operationId": "c84a4f375b3df27d973cf7d30a377d52",
+                "parameters": [
+                    {
+                        "name": "location",
+                        "in": "path",
+                        "description": "Delivery location ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Location deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Location deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Location not found"
+                    }
+                }
+            }
+        },
         "/api/orders/cod": {
             "post": {
                 "tags": [
@@ -2972,6 +3235,34 @@
                     }
                 ]
             },
+            "DeliveryLocation": {
+                "title": "Delivery Location",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "city": {
+                        "type": "string"
+                    },
+                    "shipping_charge": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Product": {
                 "required": [
                     "name",
@@ -3058,6 +3349,10 @@
         {
             "name": "Categories",
             "description": "API endpoints for category management"
+        },
+        {
+            "name": "Delivery Locations",
+            "description": "API Endpoints for managing delivery locations"
         },
         {
             "name": "Orders",
