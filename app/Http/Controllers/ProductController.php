@@ -199,12 +199,12 @@ class ProductController extends Controller
      * Display the specified product.
      * 
      * @OA\Get(
-     *     path="/api/products/{product}",
-     *     summary="Get product details",
-     *     description="Returns the details of a specific product (public endpoint)",
+     *     path="/api/product/single/{id}",
+     *     summary="Get product details by ID",
+     *     description="Returns the details of a specific product by ID (public endpoint)",
      *     tags={"Products"},
      *     @OA\Parameter(
-     *         name="product",
+     *         name="id",
      *         in="path",
      *         description="Product ID",
      *         required=true,
@@ -218,10 +218,13 @@ class ProductController extends Controller
      *     @OA\Response(response=404, description="Product not found")
      * )
      */
-    public function show(Product $product)
+    public function show($id)
     {
-        // Load the category relationship
-        $product->load('category');
+        $product = Product::with('category')->find($id);
+        
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
         
         return response()->json($product);
     }
