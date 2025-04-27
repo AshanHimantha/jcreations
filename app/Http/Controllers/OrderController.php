@@ -401,7 +401,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/orders/{id}/status",
+     *     path="/api/admin/orders/{id}/status",
      *     summary="Update order status",
      *     description="Updates the processing status of an existing order",
      *     operationId="updateOrderStatus",
@@ -480,7 +480,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/orders/{id}/payment-status",
+     *     path="/api/admin/orders/{id}/payment-status",
      *     summary="Update order payment status",
      *     description="Updates the payment status of an existing order",
      *     operationId="updatePaymentStatus",
@@ -658,7 +658,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/orders",
+     *     path="/api/admin/orders",
      *     summary="Get all orders with optional filtering",
      *     description="Retrieves a list of all orders with optional filters for status, payment type, and user",
      *     operationId="getAllOrders",
@@ -761,7 +761,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/orders/search",
+     *     path="/api/admin/orders/search",
      *     summary="Search orders by various criteria",
      *     description="Performs a search across orders with filtering options for text search, status, payment type, and date range",
      *     operationId="searchOrders",
@@ -912,7 +912,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/orders/{id}/cancel",
+     *     path="/api/admin/orders/{id}/cancel",
      *     summary="Cancel an order",
      *     description="Cancels an existing order if it's in a cancellable state (not delivered or shipped)",
      *     operationId="cancelOrder",

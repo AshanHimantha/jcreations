@@ -1439,7 +1439,7 @@
                 }
             }
         },
-        "/api/orders/{id}/status": {
+        "/api/admin/orders/{id}/status": {
             "put": {
                 "tags": [
                     "Orders"
@@ -1551,7 +1551,7 @@
                 }
             }
         },
-        "/api/orders/{id}/payment-status": {
+        "/api/admin/orders/{id}/payment-status": {
             "put": {
                 "tags": [
                     "Orders"
@@ -1866,7 +1866,7 @@
                 }
             }
         },
-        "/api/orders": {
+        "/api/admin/orders": {
             "get": {
                 "tags": [
                     "Orders"
@@ -2059,7 +2059,7 @@
                 }
             }
         },
-        "/api/orders/search": {
+        "/api/admin/orders/search": {
             "get": {
                 "tags": [
                     "Orders"
@@ -2294,7 +2294,7 @@
                 }
             }
         },
-        "/api/orders/{id}/cancel": {
+        "/api/admin/orders/{id}/cancel": {
             "delete": {
                 "tags": [
                     "Orders"

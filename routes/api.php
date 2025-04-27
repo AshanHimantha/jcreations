@@ -59,14 +59,8 @@ Route::post('/orders/cod', [OrderController::class, 'createCodOrder']);
 Route::get('/orders/{id}', [OrderController::class, 'getOrder']);
 
 
-
-
 // Add these routes to your existing routes
 Route::post('/orders/online', [OrderController::class, 'createOnlineOrder']);
-
-
-
-
 
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
