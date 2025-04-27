@@ -244,7 +244,7 @@ class ProductController extends Controller
     /**
      * Update the specified product.
      * 
-     * @OA\Post(
+     * @OA\Put(
      *     path="/api/admin/products/{product}",
      *     summary="Update product",
      *     description="Updates an existing product",

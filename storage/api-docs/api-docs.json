@@ -3088,13 +3088,13 @@
             }
         },
         "/api/admin/products/{product}": {
-            "post": {
+            "put": {
                 "tags": [
                     "Products"
                 ],
                 "summary": "Update product",
                 "description": "Updates an existing product",
-                "operationId": "1bf1595be5b90669e9de5416e7cc4426",
+                "operationId": "4c34bb1137dacdbc234e97d171ec0111",
                 "parameters": [
                     {
                         "name": "product",
