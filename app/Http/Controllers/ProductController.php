@@ -64,6 +64,7 @@ class ProductController extends Controller
         
         $products = Product::with('category')
                     ->where('status', '!=', 'deactive')
+                    ->orderBy('created_at', 'desc')
                     ->limit($limit)
                     ->get();
         
@@ -100,6 +101,7 @@ class ProductController extends Controller
             
             $products = Product::with('category')
                        ->limit($limit)
+                       ->orderBy('created_at', 'desc')
                        ->get();
         } else {
             // Original behavior - get all products with no limit
