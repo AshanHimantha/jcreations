@@ -13,6 +13,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PayHereNotificationController;
 use App\Models\User;
 use App\Http\Controllers\DeliveryLocationController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\MaintenanceController;
 
 Route::get('create-storage-link', function () {
@@ -55,6 +56,8 @@ Route::post('/cart/items', [CartItemController::class, 'store']);
 Route::put('/cart/items/{id}', [CartItemController::class, 'update']);
 Route::delete('/cart/items/{id}', [CartItemController::class, 'destroy']);
 
+
+Route::post('/send-verification-code', [EmailVerificationController::class, 'sendVerificationCode']);
 
 // Cash on Delivery routes
 Route::post('/orders/cod', [OrderController::class, 'createCodOrder']);
