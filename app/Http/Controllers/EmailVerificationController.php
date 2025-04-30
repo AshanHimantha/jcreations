@@ -19,15 +19,6 @@ class EmailVerificationController extends Controller
      *     description="Sends a verification code to the provided email address",
      *     operationId="sendVerificationCode",
      *     tags={"Email Verification"},
-     *     @OA\Parameter(
-     *         name="X-Mail-API-Key",
-     *         in="header",
-     *         required=true,
-     *         description="API key for authorization",
-     *         @OA\Schema(
-     *             type="string"
-     *         )
-     *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         description="Email and verification code",
@@ -43,14 +34,6 @@ class EmailVerificationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Verification code sent successfully"),
      *             @OA\Property(property="success", type="boolean", example=true)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized - Invalid or missing API key",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Unauthorized request"),
-     *             @OA\Property(property="success", type="boolean", example=false)
      *         )
      *     ),
      *     @OA\Response(
@@ -86,15 +69,6 @@ class EmailVerificationController extends Controller
      */
     public function sendVerificationCode(Request $request)
     {
-        // Check API key for security
-        $providedApiKey = $request->header('X-Mail-API-Key');
-        if (!$providedApiKey || $providedApiKey !== config('mail.api_key')) {
-            return response()->json([
-                'message' => 'Unauthorized request',
-                'success' => false
-            ], 401);
-        }
-        
         // Validate the request
         $request->validate([
             'email' => 'required|email',
