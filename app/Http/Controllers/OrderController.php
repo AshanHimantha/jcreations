@@ -626,7 +626,16 @@ class OrderController extends Controller
     {
         $query = Order::query()
             ->with('orderItems')
-            ->where('firebase_uid', $firebaseUid);
+            ->where('firebase_uid', $firebaseUid)
+            ->where(function($query) {
+                // Include all cash on delivery orders
+                $query->where('payment_type', 'cash_on_delivery')
+                    // OR only successful card payment orders
+                    ->orWhere(function($query) {
+                        $query->where('payment_type', 'card_payment')
+                              ->where('payment_status', 'success');
+                    });
+            });
         
         // Filter by status if provided
         if ($request->has('status')) {
