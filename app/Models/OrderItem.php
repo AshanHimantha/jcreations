@@ -16,6 +16,7 @@ class OrderItem extends Model
         'quantity',
         'unit_price',
         'total_price',
+        'product_id', 
     ];
 
     protected $casts = [
@@ -29,5 +30,13 @@ class OrderItem extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /**
+     * Get the product associated with this order item.
+     */
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }

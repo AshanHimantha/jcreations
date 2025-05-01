@@ -116,6 +116,7 @@ class OrderController extends Controller
         foreach ($cart->items as $item) {
             OrderItem::create([
                 'order_id' => $order->id,
+                'product_id' => $item->product->id,
                 'product_name' => $item->product->name,
                 'quantity' => $item->quantity,
                 'unit_price' => $item->product->price * ((100 - $item->product->discount_percentage) / 100),
@@ -281,6 +282,7 @@ class OrderController extends Controller
         foreach ($cart->items as $item) {
             OrderItem::create([
                 'order_id' => $order->id,
+                'product_id' => $item->product->id,
                 'product_name' => $item->product->name,
                 'quantity' => $item->quantity,
                 'unit_price' => $item->product->price * ((100 - $item->product->discount_percentage) / 100),
@@ -625,7 +627,10 @@ class OrderController extends Controller
     public function getUserOrders($firebaseUid, $limit = 10, Request $request): JsonResponse
     {
         $query = Order::query()
-            ->with('orderItems')
+            ->with(['orderItems' => function($query) {
+                // Get additional product details if needed
+                $query->with('product');
+            }])
             ->where('firebase_uid', $firebaseUid)
             ->where(function($query) {
                 // Include all cash on delivery orders
