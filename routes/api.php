@@ -68,6 +68,8 @@ Route::get('/banner', [BannerController::class, 'show']);
 // Add these routes to your existing routes
 Route::post('/orders/online', [OrderController::class, 'createOnlineOrder']);
 
+Route::get('/user/{firebase_uid}/orders/{limit}', [OrderController::class, 'getUserOrders']);
+
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
@@ -96,6 +98,7 @@ Route::prefix('admin')->group(function () {
             Route::put('/products/{product}', [ProductController::class, 'update']);
             Route::delete('/products/{product}', [ProductController::class, 'destroy']);
      
+
             // Create, update, delete operations
            Route::post('/locations', [DeliveryLocationController::class, 'store']);
            Route::put('/locations/{location}', [DeliveryLocationController::class, 'update']);
@@ -107,7 +110,7 @@ Route::prefix('admin')->group(function () {
            Route::delete('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']);
            Route::get('/orders', [OrderController::class, 'getAllOrders']);
            Route::put('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus']);
-           
+          
            Route::post('/banner', [BannerController::class, 'store']);
            Route::delete('/banner', [BannerController::class, 'destroy']);
         });

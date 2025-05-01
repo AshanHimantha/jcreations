@@ -1401,17 +1401,6 @@
                 "summary": "Send verification code to email",
                 "description": "Sends a verification code to the provided email address",
                 "operationId": "sendVerificationCode",
-                "parameters": [
-                    {
-                        "name": "X-Mail-API-Key",
-                        "in": "header",
-                        "description": "API key for authorization",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
                 "requestBody": {
                     "description": "Email and verification code",
                     "required": true,
@@ -1452,26 +1441,6 @@
                                         "success": {
                                             "type": "boolean",
                                             "example": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Invalid or missing API key",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Unauthorized request"
-                                        },
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
                                         }
                                     },
                                     "type": "object"
@@ -2248,13 +2217,13 @@
                 }
             }
         },
-        "/api/user/{firebase_uid}/orders": {
+        "/api/user/{firebase_uid}/orders/{limit}": {
             "get": {
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Get all orders for a specific user",
-                "description": "Retrieves a paginated list of all orders associated with a specific Firebase user ID",
+                "summary": "Get orders for a specific user with limit",
+                "description": "Retrieves a limited list of orders associated with a specific Firebase user ID",
                 "operationId": "getUserOrders",
                 "parameters": [
                     {
@@ -2265,6 +2234,16 @@
                         "schema": {
                             "type": "string",
                             "example": "abc123xyz"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "path",
+                        "description": "Maximum number of orders to return",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
                         }
                     },
                     {
@@ -2281,24 +2260,6 @@
                                 "cancelled"
                             ]
                         }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "description": "Number of records per page (default 15)",
-                        "schema": {
-                            "type": "integer",
-                            "default": 15
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Page number",
-                        "schema": {
-                            "type": "integer",
-                            "default": 1
-                        }
                     }
                 ],
                 "responses": {
@@ -2307,145 +2268,121 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "current_page": {
-                                            "type": "integer",
-                                            "example": 1
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer",
-                                                        "example": 123
-                                                    },
-                                                    "customer_name": {
-                                                        "type": "string",
-                                                        "example": "John Doe"
-                                                    },
-                                                    "contact_number": {
-                                                        "type": "string",
-                                                        "example": "1234567890"
-                                                    },
-                                                    "delivery_location_id": {
-                                                        "type": "integer",
-                                                        "example": 5
-                                                    },
-                                                    "address": {
-                                                        "type": "string",
-                                                        "example": "123 Main St"
-                                                    },
-                                                    "firebase_uid": {
-                                                        "type": "string",
-                                                        "example": "abc123xyz",
-                                                        "nullable": true
-                                                    },
-                                                    "status": {
-                                                        "type": "string",
-                                                        "example": "pending"
-                                                    },
-                                                    "payment_type": {
-                                                        "type": "string",
-                                                        "example": "cash_on_delivery"
-                                                    },
-                                                    "payment_status": {
-                                                        "type": "string",
-                                                        "example": "pending",
-                                                        "nullable": true
-                                                    },
-                                                    "total_amount": {
-                                                        "type": "number",
-                                                        "format": "float",
-                                                        "example": 150.75
-                                                    },
-                                                    "shipping_charge": {
-                                                        "type": "number",
-                                                        "format": "float",
-                                                        "example": 10
-                                                    },
-                                                    "order_datetime": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2025-04-27T10:30:00Z"
-                                                    },
-                                                    "req_datetime": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2025-04-30T14:00:00Z",
-                                                        "nullable": true
-                                                    },
-                                                    "orderItems": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "properties": {
-                                                                "id": {
-                                                                    "type": "integer",
-                                                                    "example": 456
-                                                                },
-                                                                "product_name": {
-                                                                    "type": "string",
-                                                                    "example": "Product Name"
-                                                                },
-                                                                "quantity": {
-                                                                    "type": "integer",
-                                                                    "example": 2
-                                                                },
-                                                                "unit_price": {
-                                                                    "type": "number",
-                                                                    "format": "float",
-                                                                    "example": 75.38
-                                                                }
-                                                            },
-                                                            "type": "object"
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 123
+                                            },
+                                            "customer_name": {
+                                                "type": "string",
+                                                "example": "John Doe"
+                                            },
+                                            "contact_number": {
+                                                "type": "string",
+                                                "example": "1234567890"
+                                            },
+                                            "delivery_location_id": {
+                                                "type": "integer",
+                                                "example": 5
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "example": "123 Main St"
+                                            },
+                                            "firebase_uid": {
+                                                "type": "string",
+                                                "example": "abc123xyz",
+                                                "nullable": true
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "pending",
+                                                    "processing",
+                                                    "shipped",
+                                                    "delivered",
+                                                    "cancelled"
+                                                ],
+                                                "example": "pending"
+                                            },
+                                            "payment_type": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "cash_on_delivery",
+                                                    "card_payment"
+                                                ],
+                                                "example": "cash_on_delivery"
+                                            },
+                                            "payment_status": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "pending",
+                                                    "success",
+                                                    "failed"
+                                                ],
+                                                "example": "pending",
+                                                "nullable": true
+                                            },
+                                            "total_amount": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 150.75
+                                            },
+                                            "shipping_charge": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 10
+                                            },
+                                            "order_datetime": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2025-04-27T10:30:00Z"
+                                            },
+                                            "req_datetime": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2025-04-30T14:00:00Z",
+                                                "nullable": true
+                                            },
+                                            "orderItems": {
+                                                "type": "array",
+                                                "items": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 456
+                                                        },
+                                                        "order_id": {
+                                                            "type": "integer",
+                                                            "example": 123
+                                                        },
+                                                        "product_name": {
+                                                            "type": "string",
+                                                            "example": "Product Name"
+                                                        },
+                                                        "quantity": {
+                                                            "type": "integer",
+                                                            "example": 2
+                                                        },
+                                                        "unit_price": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 75.38
+                                                        },
+                                                        "total_price": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 150.75
                                                         }
-                                                    }
-                                                },
-                                                "type": "object"
+                                                    },
+                                                    "type": "object"
+                                                }
                                             }
                                         },
-                                        "first_page_url": {
-                                            "type": "string",
-                                            "example": "http://example.com/api/user/abc123xyz/orders?page=1"
-                                        },
-                                        "from": {
-                                            "type": "integer",
-                                            "example": 1
-                                        },
-                                        "last_page": {
-                                            "type": "integer",
-                                            "example": 2
-                                        },
-                                        "last_page_url": {
-                                            "type": "string",
-                                            "example": "http://example.com/api/user/abc123xyz/orders?page=2"
-                                        },
-                                        "next_page_url": {
-                                            "type": "string",
-                                            "example": "http://example.com/api/user/abc123xyz/orders?page=2"
-                                        },
-                                        "path": {
-                                            "type": "string",
-                                            "example": "http://example.com/api/user/abc123xyz/orders"
-                                        },
-                                        "per_page": {
-                                            "type": "integer",
-                                            "example": 15
-                                        },
-                                        "prev_page_url": {
-                                            "type": "string",
-                                            "example": null
-                                        },
-                                        "to": {
-                                            "type": "integer",
-                                            "example": 15
-                                        },
-                                        "total": {
-                                            "type": "integer",
-                                            "example": 25
-                                        }
-                                    },
-                                    "type": "object"
+                                        "type": "object"
+                                    }
                                 }
                             }
                         }

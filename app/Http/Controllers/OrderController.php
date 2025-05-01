@@ -559,9 +559,9 @@ class OrderController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/user/{firebase_uid}/orders",
-     *     summary="Get all orders for a specific user",
-     *     description="Retrieves a paginated list of all orders associated with a specific Firebase user ID",
+     *     path="/api/user/{firebase_uid}/orders/{limit}",
+     *     summary="Get orders for a specific user with limit",
+     *     description="Retrieves a limited list of orders associated with a specific Firebase user ID",
      *     operationId="getUserOrders",
      *     tags={"Orders"},
      *     @OA\Parameter(
@@ -572,74 +572,57 @@ class OrderController extends Controller
      *         @OA\Schema(type="string", example="abc123xyz")
      *     ),
      *     @OA\Parameter(
+     *         name="limit",
+     *         in="path",
+     *         required=true,
+     *         description="Maximum number of orders to return",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Parameter(
      *         name="status",
      *         in="query",
      *         description="Filter orders by status",
      *         @OA\Schema(type="string", enum={"pending", "processing", "shipped", "delivered", "cancelled"})
      *     ),
-     *     @OA\Parameter(
-     *         name="per_page",
-     *         in="query",
-     *         description="Number of records per page (default 15)",
-     *         @OA\Schema(type="integer", default=15)
-     *     ),
-     *     @OA\Parameter(
-     *         name="page",
-     *         in="query",
-     *         description="Page number",
-     *         @OA\Schema(type="integer", default=1)
-     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="List of user's orders",
      *         @OA\JsonContent(
-     *             @OA\Property(property="current_page", type="integer", example=1),
-     *             @OA\Property(
-     *                 property="data", 
-     *                 type="array",
-     *                 @OA\Items(
-     *                     type="object",
-     *                     @OA\Property(property="id", type="integer", example=123),
-     *                     @OA\Property(property="customer_name", type="string", example="John Doe"),
-     *                     @OA\Property(property="contact_number", type="string", example="1234567890"),
-     *                     @OA\Property(property="delivery_location_id", type="integer", example=5),
-     *                     @OA\Property(property="address", type="string", example="123 Main St"),
-     *                     @OA\Property(property="firebase_uid", type="string", example="abc123xyz", nullable=true),
-     *                     @OA\Property(property="status", type="string", example="pending"),
-     *                     @OA\Property(property="payment_type", type="string", example="cash_on_delivery"),
-     *                     @OA\Property(property="payment_status", type="string", example="pending", nullable=true),
-     *                     @OA\Property(property="total_amount", type="number", format="float", example=150.75),
-     *                     @OA\Property(property="shipping_charge", type="number", format="float", example=10.00),
-     *                     @OA\Property(property="order_datetime", type="string", format="date-time", example="2025-04-27T10:30:00Z"),
-     *                     @OA\Property(property="req_datetime", type="string", format="date-time", example="2025-04-30T14:00:00Z", nullable=true),
-     *                     @OA\Property(
-     *                         property="orderItems",
-     *                         type="array",
-     *                         @OA\Items(
-     *                             type="object",
-     *                             @OA\Property(property="id", type="integer", example=456),
-     *                             @OA\Property(property="product_name", type="string", example="Product Name"),
-     *                             @OA\Property(property="quantity", type="integer", example=2),
-     *                             @OA\Property(property="unit_price", type="number", format="float", example=75.38)
-     *                         )
+     *             type="array",
+     *             @OA\Items(
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=123),
+     *                 @OA\Property(property="customer_name", type="string", example="John Doe"),
+     *                 @OA\Property(property="contact_number", type="string", example="1234567890"),
+     *                 @OA\Property(property="delivery_location_id", type="integer", example=5),
+     *                 @OA\Property(property="address", type="string", example="123 Main St"),
+     *                 @OA\Property(property="firebase_uid", type="string", example="abc123xyz", nullable=true),
+     *                 @OA\Property(property="status", type="string", enum={"pending", "processing", "shipped", "delivered", "cancelled"}, example="pending"),
+     *                 @OA\Property(property="payment_type", type="string", enum={"cash_on_delivery", "card_payment"}, example="cash_on_delivery"),
+     *                 @OA\Property(property="payment_status", type="string", enum={"pending", "success", "failed"}, example="pending", nullable=true),
+     *                 @OA\Property(property="total_amount", type="number", format="float", example=150.75),
+     *                 @OA\Property(property="shipping_charge", type="number", format="float", example=10.00),
+     *                 @OA\Property(property="order_datetime", type="string", format="date-time", example="2025-04-27T10:30:00Z"),
+     *                 @OA\Property(property="req_datetime", type="string", format="date-time", example="2025-04-30T14:00:00Z", nullable=true),
+     *                 @OA\Property(
+     *                     property="orderItems",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="id", type="integer", example=456),
+     *                         @OA\Property(property="order_id", type="integer", example=123),
+     *                         @OA\Property(property="product_name", type="string", example="Product Name"),
+     *                         @OA\Property(property="quantity", type="integer", example=2),
+     *                         @OA\Property(property="unit_price", type="number", format="float", example=75.38),
+     *                         @OA\Property(property="total_price", type="number", format="float", example=150.75)
      *                     )
      *                 )
-     *             ),
-     *             @OA\Property(property="first_page_url", type="string", example="http://example.com/api/user/abc123xyz/orders?page=1"),
-     *             @OA\Property(property="from", type="integer", example=1),
-     *             @OA\Property(property="last_page", type="integer", example=2),
-     *             @OA\Property(property="last_page_url", type="string", example="http://example.com/api/user/abc123xyz/orders?page=2"),
-     *             @OA\Property(property="next_page_url", type="string", example="http://example.com/api/user/abc123xyz/orders?page=2"),
-     *             @OA\Property(property="path", type="string", example="http://example.com/api/user/abc123xyz/orders"),
-     *             @OA\Property(property="per_page", type="integer", example=15),
-     *             @OA\Property(property="prev_page_url", type="string", example=null),
-     *             @OA\Property(property="to", type="integer", example=15),
-     *             @OA\Property(property="total", type="integer", example=25)
+     *             )
      *         )
      *     )
      * )
      */
-    public function getUserOrders($firebaseUid, Request $request): JsonResponse
+    public function getUserOrders($firebaseUid, $limit = 10, Request $request): JsonResponse
     {
         $query = Order::query()
             ->with('orderItems')
@@ -651,7 +634,8 @@ class OrderController extends Controller
         }
         
         $orders = $query->orderBy('created_at', 'desc')
-            ->paginate($request->per_page ?? 15);
+            ->take($limit)
+            ->get();
         
         return response()->json($orders, 200);
     }
