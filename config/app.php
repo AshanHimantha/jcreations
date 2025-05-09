@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'owner_phone' => env('OWNER_PHONE', null),
+
 ];

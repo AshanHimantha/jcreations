@@ -40,4 +40,9 @@ return [
         'merchant_secret' => env('PAYMENT_GATEWAY_MERCHANT_SECRET', ''),
     ],
 
+    'text_lk' => [
+        'api_token' => env('TEXT_LK_API_TOKEN'),
+        'sender_id' => env('TEXT_LK_SENDER_ID', 'TextLKDemo'),
+    ],
+
 ];

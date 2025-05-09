@@ -129,12 +129,13 @@ class OrderController extends Controller
         
         // Send SMS notification for COD order
         try {
+            // Send notification to customer
             $recipient = $order->contact_number;
             
             $response = \Illuminate\Support\Facades\Http::post('https://app.text.lk/api/http/sms/send', [
-                'api_token' => '490|p1hxF1oYz3QxBTHQjuODsDjHVFPjQ59Tx7QU2o5i9f850b6f',
+                'api_token' => config('services.text_lk.api_token'),
                 'recipient' => $recipient,
-                'sender_id' => 'TextLKDemo',
+                'sender_id' => config('services.text_lk.sender_id', 'TextLKDemo'),
                 'type' => 'plain',
                 'message' => "Your Cash on Delivery order #{$order->id} has been successfully placed. Thank you for your purchase!"
             ]);
@@ -143,6 +144,23 @@ class OrderController extends Controller
                 \Illuminate\Support\Facades\Log::info("SMS notification sent for COD order #{$order->id}");
             } else {
                 \Illuminate\Support\Facades\Log::error("Failed to send SMS notification for COD order #{$order->id}: " . $response->body());
+            }
+            
+            // Send notification to owner
+            $ownerPhone = config('app.owner_phone', '1234567890'); // Get from config or use default
+            
+            $ownerResponse = \Illuminate\Support\Facades\Http::post('https://app.text.lk/api/http/sms/send', [
+                'api_token' => config('services.text_lk.api_token'),
+                'recipient' => $ownerPhone,
+                'sender_id' => config('services.text_lk.sender_id', 'TextLKDemo'),
+                'type' => 'plain',
+                'message' => "New order received! Order #{$order->id} for {$order->total_amount} LKR from {$order->customer_name}. Payment: COD"
+            ]);
+            
+            if ($ownerResponse->successful()) {
+                \Illuminate\Support\Facades\Log::info("Owner notification sent for COD order #{$order->id}");
+            } else {
+                \Illuminate\Support\Facades\Log::error("Failed to send owner notification for COD order #{$order->id}: " . $ownerResponse->body());
             }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("SMS notification error for COD order #{$order->id}: " . $e->getMessage());
