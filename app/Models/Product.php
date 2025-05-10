@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="price", type="number", format="float", example=999.99),
  *     @OA\Property(property="discount_percentage", type="number", format="float", example=10.5),
  *     @OA\Property(property="status", type="string", enum={"deactive", "in_stock", "out_of_stock"}, example="in_stock"),
+ *     @OA\Property(property="discounted_price", type="number", format="float", example=899.99, description="Calculated price after applying discount"),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
@@ -57,5 +58,16 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the discounted price of the product
+     */
+    public function getDiscountedPriceAttribute()
+    {
+        if ($this->discount_percentage > 0) {
+            return round($this->price * (1 - $this->discount_percentage / 100), 2);
+        }
+        return $this->price;
     }
 }

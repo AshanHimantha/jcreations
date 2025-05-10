@@ -134,6 +134,7 @@ class ProductController extends Controller
      *                 @OA\Property(property="category_id", type="integer", example=1),
      *                 @OA\Property(property="price", type="number", format="float", example=999.99),
      *                 @OA\Property(property="discount_percentage", type="number", format="float", example=10.5),
+     *                 @OA\Property(property="discounted_price", type="number", format="float", example=899.99, description="Direct discounted price (alternative to discount_percentage)"),
      *                 @OA\Property(property="status", type="string", enum={"deactive", "in_stock", "out_of_stock"}, example="in_stock")
      *             )
      *         )
@@ -153,19 +154,33 @@ class ProductController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'description' => 'required|string',
+                'description' => 'nullable|string', // Add as nullable
                 'category_id' => 'required|integer|exists:categories,id',
                 'price' => 'required|numeric|min:0',
                 'discount_percentage' => 'nullable|numeric|min:0|max:100',
+                'discounted_price' => 'nullable|numeric|min:0',
                 'status' => ['required', Rule::in(['deactive', 'in_stock', 'out_of_stock'])],
                 'image1' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
+            // Validate that discounted_price is less than regular price
+            if (isset($validated['discounted_price']) && $validated['discounted_price'] >= $validated['price']) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => ['discounted_price' => ['Discounted price must be less than regular price']]
+                ], 422);
+            }
+
+            // Calculate discount_percentage if discounted_price is provided and discount_percentage isn't
+            if (isset($validated['discounted_price']) && !isset($validated['discount_percentage'])) {
+                $validated['discount_percentage'] = round((1 - ($validated['discounted_price'] / $validated['price'])) * 100, 2);
+            }
+
             $product = new Product();
             $product->name = $validated['name'];
-            $product->description = $validated['description'];
+            $product->description = $validated['description'] ?? ""; // Use null coalescing operator
             $product->category_id = $validated['category_id'];
             $product->price = $validated['price'];
             $product->discount_percentage = $validated['discount_percentage'] ?? 0;
@@ -312,6 +327,10 @@ class ProductController extends Controller
                 $rules['discount_percentage'] = 'nullable|numeric|min:0|max:100';
             }
             
+            if ($request->has('discounted_price')) {
+                $rules['discounted_price'] = 'nullable|numeric|min:0';
+            }
+            
             if ($request->has('status')) {
                 $rules['status'] = Rule::in(['deactive', 'in_stock', 'out_of_stock']);
             }
@@ -329,6 +348,29 @@ class ProductController extends Controller
             }
             
             $validated = $request->validate($rules);
+            
+            // Validate that discounted_price is less than regular price if both provided
+            if (isset($validated['discounted_price']) && 
+                isset($validated['price']) && 
+                $validated['discounted_price'] >= $validated['price']) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => ['discounted_price' => ['Discounted price must be less than regular price']]
+                ], 422);
+            } else if (isset($validated['discounted_price']) && 
+                     !isset($validated['price']) && 
+                     $validated['discounted_price'] >= $product->price) {
+                return response()->json([
+                    'message' => 'Validation failed', 
+                    'errors' => ['discounted_price' => ['Discounted price must be less than regular price']]
+                ], 422);
+            }
+            
+            // Calculate discount_percentage if discounted_price is provided
+            if (isset($validated['discounted_price'])) {
+                $price = $validated['price'] ?? $product->price;
+                $validated['discount_percentage'] = round((1 - ($validated['discounted_price'] / $price)) * 100, 2);
+            }
             
             // Update basic fields
             if ($request->has('name')) {

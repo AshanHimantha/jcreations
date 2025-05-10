@@ -3088,6 +3088,12 @@
                                         "format": "float",
                                         "example": 10.5
                                     },
+                                    "discounted_price": {
+                                        "description": "Direct discounted price (alternative to discount_percentage)",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 899.99
+                                    },
                                     "status": {
                                         "type": "string",
                                         "enum": [
@@ -3620,6 +3626,12 @@
                             "out_of_stock"
                         ],
                         "example": "in_stock"
+                    },
+                    "discounted_price": {
+                        "description": "Calculated price after applying discount",
+                        "type": "number",
+                        "format": "float",
+                        "example": 899.99
                     },
                     "created_at": {
                         "type": "string",
