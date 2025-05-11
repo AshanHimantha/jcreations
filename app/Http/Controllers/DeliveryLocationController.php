@@ -18,7 +18,7 @@ class DeliveryLocationController extends Controller
      * Display a listing of the locations.
      *
      * @OA\Get(
-     *     path="/api/delivery-locations",
+     *     path="/api/locations",
      *     tags={"Delivery Locations"},
      *     summary="Get list of all delivery locations",
      *     @OA\Response(
@@ -46,7 +46,7 @@ class DeliveryLocationController extends Controller
      * Store a newly created location in storage.
      *
      * @OA\Post(
-     *     path="/api/admin/delivery-locations",
+     *     path="/api/admin/locations",
      *     tags={"Delivery Locations"},
      *     summary="Create a new delivery location",
      *     @OA\RequestBody(
@@ -106,7 +106,7 @@ class DeliveryLocationController extends Controller
      * Display the specified location.
      * 
      * @OA\Get(
-     *     path="/api/admin/delivery-locations/{location}",
+     *     path="/api/admin/locations/{location}",
      *     tags={"Delivery Locations"},
      *     summary="Get a specific delivery location",
      *     @OA\Parameter(
@@ -141,7 +141,7 @@ class DeliveryLocationController extends Controller
      * Update the specified location in storage.
      * 
      * @OA\Put(
-     *     path="/api/admin/delivery-locations/{location}",
+     *     path="/api/admin/locations/{location}",
      *     tags={"Delivery Locations"},
      *     summary="Update a delivery location",
      *     @OA\Parameter(
@@ -209,7 +209,7 @@ class DeliveryLocationController extends Controller
      * Remove the specified location from storage.
      * 
      * @OA\Delete(
-     *     path="/api/admin/delivery-locations/{location}",
+     *     path="/api/admin/locations/{location}",
      *     tags={"Delivery Locations"},
      *     summary="Delete a delivery location",
      *     @OA\Parameter(

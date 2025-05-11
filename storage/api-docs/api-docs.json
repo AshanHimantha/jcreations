@@ -1130,14 +1130,14 @@
                 ]
             }
         },
-        "/api/delivery-locations": {
+        "/api/locations": {
             "get": {
                 "tags": [
                     "Delivery Locations"
                 ],
                 "summary": "Get list of all delivery locations",
                 "description": "Display a listing of the locations.",
-                "operationId": "9c9dd5ffdfa1d9ff6f742962d91a423f",
+                "operationId": "3636cdc822eb207da4b9f5750800e22c",
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -1160,14 +1160,14 @@
                 }
             }
         },
-        "/api/admin/delivery-locations": {
+        "/api/admin/locations": {
             "post": {
                 "tags": [
                     "Delivery Locations"
                 ],
                 "summary": "Create a new delivery location",
                 "description": "Store a newly created location in storage.",
-                "operationId": "dca0c3038fbec78ea591bf601366c894",
+                "operationId": "99c0ab7cd998762289e95964daa67199",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1238,14 +1238,14 @@
                 }
             }
         },
-        "/api/admin/delivery-locations/{location}": {
+        "/api/admin/locations/{location}": {
             "get": {
                 "tags": [
                     "Delivery Locations"
                 ],
                 "summary": "Get a specific delivery location",
                 "description": "Display the specified location.",
-                "operationId": "02346c8b92e83de746b22a73da61f6e0",
+                "operationId": "4f87ecd7a203a553472bc2ef329d9ce3",
                 "parameters": [
                     {
                         "name": "location",
@@ -1284,7 +1284,7 @@
                 ],
                 "summary": "Update a delivery location",
                 "description": "Update the specified location in storage.",
-                "operationId": "81a0cb7ae27d2590a25d7ac27f22947b",
+                "operationId": "1692c9e838945c571eedb1162177c17c",
                 "parameters": [
                     {
                         "name": "location",
@@ -1358,7 +1358,7 @@
                 ],
                 "summary": "Delete a delivery location",
                 "description": "Remove the specified location from storage.",
-                "operationId": "c84a4f375b3df27d973cf7d30a377d52",
+                "operationId": "0ef5926d57961de4f27ded8ab65037f1",
                 "parameters": [
                     {
                         "name": "location",
