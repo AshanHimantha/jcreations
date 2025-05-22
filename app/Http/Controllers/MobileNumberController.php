@@ -40,7 +40,7 @@ class MobileNumberController extends Controller
      * Store a newly created mobile number.
      * 
      * @OA\Post(
-     *     path="/api/mobile-numbers",
+     *     path="/api/admin/mobile-numbers",
      *     tags={"Mobile Numbers"},
      *     summary="Store a new mobile number",
      *     @OA\RequestBody(
@@ -121,7 +121,7 @@ class MobileNumberController extends Controller
      * Update the specified mobile number.
      * 
      * @OA\Put(
-     *     path="/api/mobile-numbers/{mobileNumber}",
+     *     path="/api/admin/mobile-numbers/{mobileNumber}",
      *     tags={"Mobile Numbers"},
      *     summary="Update an existing mobile number",
      *     @OA\Parameter(
@@ -174,7 +174,7 @@ class MobileNumberController extends Controller
      * Remove the specified mobile number.
      * 
      * @OA\Delete(
-     *     path="/api/mobile-numbers/{mobileNumber}",
+     *     path="/api/admin/mobile-numbers/{mobileNumber}",
      *     tags={"Mobile Numbers"},
      *     summary="Delete a mobile number",
      *     @OA\Parameter(

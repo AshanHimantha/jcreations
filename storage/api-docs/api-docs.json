@@ -1545,14 +1545,16 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/api/admin/mobile-numbers": {
             "post": {
                 "tags": [
                     "Mobile Numbers"
                 ],
                 "summary": "Store a new mobile number",
                 "description": "Store a newly created mobile number.",
-                "operationId": "0a1c6b29424b001bed8eb22d5359737c",
+                "operationId": "8da23d6f1c4232510dc93ecd3249f918",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1665,14 +1667,16 @@
                         "description": "Mobile number not found"
                     }
                 }
-            },
+            }
+        },
+        "/api/admin/mobile-numbers/{mobileNumber}": {
             "put": {
                 "tags": [
                     "Mobile Numbers"
                 ],
                 "summary": "Update an existing mobile number",
                 "description": "Update the specified mobile number.",
-                "operationId": "0c6d55f0b04cfc3625bf6374fc9aa6f8",
+                "operationId": "367a5699e22d2541063c955517f7262e",
                 "parameters": [
                     {
                         "name": "mobileNumber",
@@ -1738,7 +1742,7 @@
                 ],
                 "summary": "Delete a mobile number",
                 "description": "Remove the specified mobile number.",
-                "operationId": "65a6ce501d93e18c33c8b17ea29cf29c",
+                "operationId": "4d0befd5f527e30e3762208f746ad9f0",
                 "parameters": [
                     {
                         "name": "mobileNumber",
