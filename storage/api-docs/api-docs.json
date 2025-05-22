@@ -1506,6 +1506,273 @@
                 }
             }
         },
+        "/api/mobile-numbers": {
+            "get": {
+                "tags": [
+                    "Mobile Numbers"
+                ],
+                "summary": "Get list of mobile numbers",
+                "description": "Display a listing of mobile numbers.",
+                "operationId": "7b390686ba0cd0d3bbca7394ebc1d2d8",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "number": {
+                                                "type": "string"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Mobile Numbers"
+                ],
+                "summary": "Store a new mobile number",
+                "description": "Store a newly created mobile number.",
+                "operationId": "0a1c6b29424b001bed8eb22d5359737c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "number"
+                                ],
+                                "properties": {
+                                    "number": {
+                                        "type": "string",
+                                        "maxLength": 20,
+                                        "example": "1234567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Mobile number created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mobile number created successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mobile-numbers/{mobileNumber}": {
+            "get": {
+                "tags": [
+                    "Mobile Numbers"
+                ],
+                "summary": "Get a specific mobile number",
+                "description": "Display the specified mobile number.",
+                "operationId": "58d69387bf2363110f269b087a7db72c",
+                "parameters": [
+                    {
+                        "name": "mobileNumber",
+                        "in": "path",
+                        "description": "ID of mobile number to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Mobile number retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "number": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Mobile number not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Mobile Numbers"
+                ],
+                "summary": "Update an existing mobile number",
+                "description": "Update the specified mobile number.",
+                "operationId": "0c6d55f0b04cfc3625bf6374fc9aa6f8",
+                "parameters": [
+                    {
+                        "name": "mobileNumber",
+                        "in": "path",
+                        "description": "ID of mobile number to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "number"
+                                ],
+                                "properties": {
+                                    "number": {
+                                        "type": "string",
+                                        "maxLength": 20,
+                                        "example": "9876543210"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mobile number updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mobile number updated successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "404": {
+                        "description": "Mobile number not found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Mobile Numbers"
+                ],
+                "summary": "Delete a mobile number",
+                "description": "Remove the specified mobile number.",
+                "operationId": "65a6ce501d93e18c33c8b17ea29cf29c",
+                "parameters": [
+                    {
+                        "name": "mobileNumber",
+                        "in": "path",
+                        "description": "ID of mobile number to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Mobile number deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mobile number deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Mobile number not found"
+                    }
+                }
+            }
+        },
         "/api/orders/cod": {
             "post": {
                 "tags": [
@@ -3689,6 +3956,10 @@
         {
             "name": "Email Verification",
             "description": "Email Verification"
+        },
+        {
+            "name": "Mobile Numbers",
+            "description": "Mobile Numbers"
         }
     ]
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MobileNumberController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BannerController;
@@ -41,7 +42,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
 Route::get('/products/{limit?}', [ProductController::class, 'index']);
-Route::get('/product/single/{id}', [ProductController::class, 'show']); 
+Route::get('/product/single/{id}', [ProductController::class, 'show']);
 Route::get('/products/search/{limit?}', [ProductController::class, 'search']);
 
 // locations
@@ -58,6 +59,9 @@ Route::delete('/cart/items/{id}', [CartItemController::class, 'destroy']);
 
 
 Route::post('/send-verification-code', [EmailVerificationController::class, 'sendVerificationCode']);
+
+Route::get('/mobile-numbers', [MobileNumberController::class, 'index']);
+
 
 // Cash on Delivery routes
 Route::post('/orders/cod', [OrderController::class, 'createCodOrder']);
@@ -91,34 +95,38 @@ Route::prefix('admin')->group(function () {
             Route::post('/categories', [CategoryController::class, 'store']);
             Route::put('/categories/{category}', [CategoryController::class, 'update']);
             Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
-            
+
             // Protected product management routes
             Route::get('/products/limit/{limit}', [ProductController::class, 'adminIndex']);
             Route::post('/products', [ProductController::class, 'store']);
             Route::put('/products/{product}', [ProductController::class, 'update']);
             Route::delete('/products/{product}', [ProductController::class, 'destroy']);
-     
+
 
             // Create, update, delete operations
-           Route::post('/locations', [DeliveryLocationController::class, 'store']);
-           Route::put('/locations/{location}', [DeliveryLocationController::class, 'update']);
-           Route::delete('/locations/{location}', [DeliveryLocationController::class, 'destroy']);
-     
+            Route::post('/locations', [DeliveryLocationController::class, 'store']);
+            Route::put('/locations/{location}', [DeliveryLocationController::class, 'update']);
+            Route::delete('/locations/{location}', [DeliveryLocationController::class, 'destroy']);
 
-           Route::get('orders/search', [OrderController::class, 'searchOrders']);
-           Route::put('/orders/{id}/status', [OrderController::class, 'updateOrderStatus']);
-           Route::delete('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']);
-           Route::get('/orders', [OrderController::class, 'getAllOrders']);
-           Route::put('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus']);
-          
-           Route::post('/banner', [BannerController::class, 'store']);
-           Route::delete('/banner', [BannerController::class, 'destroy']);
+
+            Route::get('orders/search', [OrderController::class, 'searchOrders']);
+            Route::put('/orders/{id}/status', [OrderController::class, 'updateOrderStatus']);
+            Route::delete('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']);
+            Route::get('/orders', [OrderController::class, 'getAllOrders']);
+            Route::put('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus']);
+
+            Route::post('/banner', [BannerController::class, 'store']);
+            Route::delete('/banner', [BannerController::class, 'destroy']);
+
+            Route::post('/mobile-numbers', [MobileNumberController::class, 'store']);
+            Route::put('/mobile-numbers/{mobile_number}', [MobileNumberController::class, 'update']);
+            Route::delete('/mobile-numbers/{mobile_number}', [MobileNumberController::class, 'destroy']);
         });
 
         Route::middleware(['role:' . User::ROLE_ADMIN . ',' . User::ROLE_STAFF])->group(function () {
             // Staff routes here - might include product management
         });
-        
+
         Route::middleware(['role:' . User::ROLE_ADMIN . ',' . User::ROLE_CASHIER])->group(function () {
             // Cashier routes here
         });
@@ -127,4 +135,3 @@ Route::prefix('admin')->group(function () {
 
 // PayHere notification endpoint
 Route::post('/payhere/notify', [PayHereNotificationController::class, 'handleNotification'])->name('payhere.notify');
-
