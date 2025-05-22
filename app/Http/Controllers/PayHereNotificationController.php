@@ -63,11 +63,11 @@ class PayHereNotificationController extends Controller
                     $recipient = $order->contact_number; // Update this field name based on your Order model
                     
                     $response = \Illuminate\Support\Facades\Http::post('https://app.text.lk/api/http/sms/send', [
-                        'api_token' => '490|p1hxF1oYz3QxBTHQjuODsDjHVFPjQ59Tx7QU2o5i9f850b6f',
+                        'api_token' => env('TEXT_LK_API_TOKEN'),
                         'recipient' => $recipient,
-                        'sender_id' => 'TextLKDemo',
+                        'sender_id' => env('TEXT_LK_SENDER_ID'),
                         'type' => 'plain',
-                        'message' => "Your order #{$order_id} has been successfully paid and confirmed. Thank you for your purchase!"
+                        'message' => "Your order #{$order_id} has been successfully paid and confirmed. View your invoice: https://jcreations.lk/invoice/{$order_id}. Thank you for your purchase!"
                     ]);
                     
                     if ($response->successful()) {
