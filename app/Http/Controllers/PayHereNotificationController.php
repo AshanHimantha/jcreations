@@ -63,9 +63,9 @@ class PayHereNotificationController extends Controller
                     $recipient = $order->contact_number; // Update this field name based on your Order model
                     
                     $response = \Illuminate\Support\Facades\Http::post('https://app.text.lk/api/http/sms/send', [
-                        'api_token' => env('TEXT_LK_API_TOKEN'),
+                        'api_token' => config('services.text_lk.api_token'),
                         'recipient' => $recipient,
-                        'sender_id' => env('TEXT_LK_SENDER_ID'),
+                        'sender_id' => config('services.text_lk.sender_id', 'TextLKDemo'),
                         'type' => 'plain',
                         'message' => "Your order #{$order_id} has been successfully paid and confirmed. View your invoice: https://jcreations.lk/invoice/{$order_id}. Thank you for your purchase!"
                     ]);
@@ -74,6 +74,23 @@ class PayHereNotificationController extends Controller
                         Log::info("SMS notification sent for order #{$order_id}");
                     } else {
                         Log::error("Failed to send SMS notification for order #{$order_id}: " . $response->body());
+                    }
+                    
+                    // Send notification to owner
+                    $ownerPhone = config('app.owner_phone', '1234567890'); // Get from config or use default
+                    
+                    $ownerResponse = \Illuminate\Support\Facades\Http::post('https://app.text.lk/api/http/sms/send', [
+                        'api_token' => config('services.text_lk.api_token'),
+                        'recipient' => $ownerPhone,
+                        'sender_id' => config('services.text_lk.sender_id', 'TextLKDemo'),
+                        'type' => 'plain',
+                        'message' => "Payment received! Order #{$order_id} for {$order->total_amount} LKR from {$order->customer_name} has been paid successfully."
+                    ]);
+                    
+                    if ($ownerResponse->successful()) {
+                        Log::info("Owner notification sent for payment of order #{$order_id}");
+                    } else {
+                        Log::error("Failed to send owner notification for payment of order #{$order_id}: " . $ownerResponse->body());
                     }
                 } catch (\Exception $e) {
                     Log::error("SMS notification error for order #{$order_id}: " . $e->getMessage());
