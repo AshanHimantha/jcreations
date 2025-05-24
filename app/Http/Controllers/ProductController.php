@@ -378,7 +378,7 @@ class ProductController extends Controller
             }
             
             if ($request->has('description')) {
-                $product->description = $validated['description'];
+                $product->description = $validated['description'] ?? "";
             }
             
             if ($request->has('category_id')) {
