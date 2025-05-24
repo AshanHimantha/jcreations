@@ -137,7 +137,8 @@ class OrderController extends Controller
                 'recipient' => $recipient,
                 'sender_id' => config('services.text_lk.sender_id', 'TextLKDemo'),
                 'type' => 'plain',
-                'message' => "Your Cash on Delivery order #{$order->id} has been successfully placed. Thank you for your purchase!"
+            
+'message' => "Your Cash on Delivery order #{$order->id} has been successfully placed. Thank you for your purchase! View your invoice: https://jcreations.lk/invoice/{$order->id}"
             ]);
             
             if ($response->successful()) {
