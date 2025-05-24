@@ -312,7 +312,7 @@ class ProductController extends Controller
             }
             
             if ($request->has('description')) {
-                $rules['description'] = 'string';
+                $rules['description'] = 'nullable|string';
             }
             
             if ($request->has('category_id')) {
