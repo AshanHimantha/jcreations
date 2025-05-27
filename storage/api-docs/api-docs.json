@@ -827,6 +827,11 @@
                                                 "type": "string",
                                                 "example": "categories/electronics.jpg"
                                             },
+                                            "status": {
+                                                "description": "Category status: true=active, false=inactive",
+                                                "type": "boolean",
+                                                "example": true
+                                            },
                                             "created_at": {
                                                 "type": "string",
                                                 "format": "date-time"
@@ -851,7 +856,7 @@
                     "Categories"
                 ],
                 "summary": "Create a new category",
-                "description": "Creates a new category with name and image",
+                "description": "Creates a new category with name, image and status",
                 "operationId": "ac7cc88e7117004bc914f1d2169c5444",
                 "requestBody": {
                     "required": true,
@@ -871,6 +876,11 @@
                                         "description": "Category image",
                                         "type": "file",
                                         "format": "binary"
+                                    },
+                                    "status": {
+                                        "description": "Category status: true=active, false=inactive",
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -896,6 +906,10 @@
                                         "img": {
                                             "type": "string",
                                             "example": "categories/electronics.jpg"
+                                        },
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
                                         "created_at": {
                                             "type": "string",
@@ -970,6 +984,10 @@
                                             "type": "string",
                                             "example": "categories/electronics.jpg"
                                         },
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
                                         "created_at": {
                                             "type": "string",
                                             "format": "date-time"
@@ -1024,6 +1042,10 @@
                                         "type": "file",
                                         "format": "binary"
                                     },
+                                    "status": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
                                     "_method": {
                                         "type": "string",
                                         "default": "PUT",
@@ -1053,6 +1075,10 @@
                                         "img": {
                                             "type": "string",
                                             "example": "categories/updated-electronics.jpg"
+                                        },
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
                                         "created_at": {
                                             "type": "string",
@@ -1112,6 +1138,80 @@
                 "responses": {
                     "204": {
                         "description": "Category deleted successfully"
+                    },
+                    "404": {
+                        "description": "Category not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/categories/{category}/toggle-status": {
+            "patch": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Toggle category status",
+                "description": "Activates or deactivates a category",
+                "operationId": "d7e33eaaa16543c998483ba30160a9f3",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category status toggled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Electronics"
+                                        },
+                                        "img": {
+                                            "type": "string",
+                                            "example": "categories/electronics.jpg"
+                                        },
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Category not found"

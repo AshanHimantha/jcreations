@@ -16,6 +16,16 @@ class Category extends Model
      */
     protected $fillable = [
         'name',
-        'img'
+        'img',
+        'status'
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'status' => 'boolean',
     ];
 }

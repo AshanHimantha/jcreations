@@ -31,6 +31,7 @@ class CategoryController extends Controller
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="Electronics"),
      *                 @OA\Property(property="img", type="string", example="categories/electronics.jpg"),
+     *                 @OA\Property(property="status", type="boolean", example=true, description="Category status: true=active, false=inactive"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time")
      *             )
@@ -50,7 +51,7 @@ class CategoryController extends Controller
      * @OA\Post(
      *     path="/api/admin/categories",
      *     summary="Create a new category",
-     *     description="Creates a new category with name and image",
+     *     description="Creates a new category with name, image and status",
      *     tags={"Categories"},
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
@@ -60,7 +61,8 @@ class CategoryController extends Controller
      *             @OA\Schema(
      *                 required={"name","img"},
      *                 @OA\Property(property="name", type="string", example="Electronics"),
-     *                 @OA\Property(property="img", type="file", format="binary", description="Category image")
+     *                 @OA\Property(property="img", type="file", format="binary", description="Category image"),
+     *                 @OA\Property(property="status", type="boolean", example=true, description="Category status: true=active, false=inactive")
      *             )
      *         )
      *     ),
@@ -71,6 +73,7 @@ class CategoryController extends Controller
      *             @OA\Property(property="id", type="integer", example=1),
      *             @OA\Property(property="name", type="string", example="Electronics"),
      *             @OA\Property(property="img", type="string", example="categories/electronics.jpg"),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="created_at", type="string", format="date-time"),
      *             @OA\Property(property="updated_at", type="string", format="date-time")
      *         )
@@ -86,11 +89,13 @@ class CategoryController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:categories',
-                'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+                'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'status' => 'boolean'
             ]);
 
             $category = new Category();
             $category->name = $validated['name'];
+            $category->status = $request->has('status') ? $validated['status'] : true; // Default to active if not provided
             
             if ($request->hasFile('img')) {
                 // Store the file in the 'categories' directory within the public storage
@@ -136,6 +141,7 @@ class CategoryController extends Controller
      *             @OA\Property(property="id", type="integer", example=1),
      *             @OA\Property(property="name", type="string", example="Electronics"),
      *             @OA\Property(property="img", type="string", example="categories/electronics.jpg"),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="created_at", type="string", format="date-time"),
      *             @OA\Property(property="updated_at", type="string", format="date-time")
      *         )
@@ -170,6 +176,7 @@ class CategoryController extends Controller
      *             @OA\Schema(
      *                 @OA\Property(property="name", type="string", example="Updated Electronics"),
      *                 @OA\Property(property="img", type="file", format="binary", description="Category image"),
+     *                 @OA\Property(property="status", type="boolean", example=true),
      *                 @OA\Property(property="_method", type="string", default="PUT", example="PUT")
      *             )
      *         )
@@ -181,6 +188,7 @@ class CategoryController extends Controller
      *             @OA\Property(property="id", type="integer", example=1),
      *             @OA\Property(property="name", type="string", example="Updated Electronics"),
      *             @OA\Property(property="img", type="string", example="categories/updated-electronics.jpg"),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="created_at", type="string", format="date-time"),
      *             @OA\Property(property="updated_at", type="string", format="date-time")
      *         )
@@ -204,6 +212,10 @@ class CategoryController extends Controller
             if ($request->hasFile('img')) {
                 $rules['img'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
             }
+
+            if ($request->has('status')) {
+                $rules['status'] = 'boolean';
+            }
             
             $validated = $request->validate($rules);
             
@@ -221,6 +233,10 @@ class CategoryController extends Controller
                 $path = $request->file('img')->store('categories', 'public');
                 $category->img = $path;
             }
+
+            if ($request->has('status')) {
+                $category->status = $validated['status'];
+            }
             
             $category->save();
             
@@ -236,6 +252,47 @@ class CategoryController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Toggle category status (activate/deactivate).
+     * 
+     * @OA\Patch(
+     *     path="/api/admin/categories/{category}/toggle-status",
+     *     summary="Toggle category status",
+     *     description="Activates or deactivates a category",
+     *     tags={"Categories"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="path",
+     *         description="Category ID",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Category status toggled successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="name", type="string", example="Electronics"),
+     *             @OA\Property(property="img", type="string", example="categories/electronics.jpg"),
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="created_at", type="string", format="date-time"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Category not found"),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Forbidden")
+     * )
+     */
+    public function toggleStatus(Category $category)
+    {
+        $category->status = !$category->status;
+        $category->save();
+        
+        return response()->json($category);
     }
 
     /**
