@@ -95,6 +95,7 @@ Route::prefix('admin')->group(function () {
             Route::post('/categories', [CategoryController::class, 'store']);
             Route::put('/categories/{category}', [CategoryController::class, 'update']);
             Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
+            Route::patch('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus']);
 
             // Protected product management routes
             Route::get('/products/limit/{limit}', [ProductController::class, 'adminIndex']);
@@ -121,6 +122,8 @@ Route::prefix('admin')->group(function () {
             Route::post('/mobile-numbers', [MobileNumberController::class, 'store']);
             Route::put('/mobile-numbers/{mobile_number}', [MobileNumberController::class, 'update']);
             Route::delete('/mobile-numbers/{mobile_number}', [MobileNumberController::class, 'destroy']);
+
+           
         });
 
         Route::middleware(['role:' . User::ROLE_ADMIN . ',' . User::ROLE_STAFF])->group(function () {
