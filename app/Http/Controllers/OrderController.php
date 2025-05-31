@@ -498,7 +498,7 @@ class OrderController extends Controller
         try {
             $recipient = $order->contact_number;
             $statusMessage = $order->status === 'shipped' 
-                ? "Your order #{$order->id} has been shipped and is on its way to you! Track your delivery: https://jcreations.lk/track/{$order->id}"
+                ? "Your order #{$order->id} has been shipped and is on its way to you!"
                 : "Your order #{$order->id} has been delivered. Thank you for shopping with JCreations! We hope you enjoy your purchase.";
             
             $response = \Illuminate\Support\Facades\Http::post('https://app.text.lk/api/http/sms/send', [
