@@ -474,30 +474,57 @@ class OrderController extends Controller
      * )
      */
     public function updateOrderStatus(Request $request, $id): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|string|in:pending,in_progress,delivered,returned',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'status' => 'required|string|in:pending,in_progress,delivered,returned,shipped',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $order = Order::find($id);
-        
-        if (!$order) {
-            return response()->json(['error' => 'Order not found'], 404);
-        }
-
-        $order->status = $request->status;
-        $order->save();
-        
-        return response()->json([
-            'message' => 'Order status updated successfully',
-            'order_id' => $order->id,
-            'status' => $order->status,
-        ], 200);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
+
+    $order = Order::find($id);
+    
+    if (!$order) {
+        return response()->json(['error' => 'Order not found'], 404);
+    }
+
+    $oldStatus = $order->status;
+    $order->status = $request->status;
+    $order->save();
+    
+    // Send SMS notification if order status changed to shipped or delivered
+    if (in_array($order->status, ['shipped', 'delivered']) && $oldStatus !== $order->status) {
+        try {
+            $recipient = $order->contact_number;
+            $statusMessage = $order->status === 'shipped' 
+                ? "Your order #{$order->id} has been shipped and is on its way to you! Track your delivery: https://jcreations.lk/track/{$order->id}"
+                : "Your order #{$order->id} has been delivered. Thank you for shopping with JCreations! We hope you enjoy your purchase.";
+            
+            $response = \Illuminate\Support\Facades\Http::post('https://app.text.lk/api/http/sms/send', [
+                'api_token' => config('services.text_lk.api_token'),
+                'recipient' => $recipient,
+                'sender_id' => config('services.text_lk.sender_id', 'TextLKDemo'),
+                'type' => 'plain',
+                'message' => $statusMessage
+            ]);
+            
+            if ($response->successful()) {
+                \Illuminate\Support\Facades\Log::info("SMS status notification sent for order #{$order->id}, status: {$order->status}");
+            } else {
+                \Illuminate\Support\Facades\Log::error("Failed to send SMS status notification for order #{$order->id}: " . $response->body());
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("SMS notification error for order status update #{$order->id}: " . $e->getMessage());
+        }
+    }
+    
+    return response()->json([
+        'message' => 'Order status updated successfully',
+        'order_id' => $order->id,
+        'status' => $order->status,
+    ], 200);
+}
 
     /**
      * @OA\Put(
