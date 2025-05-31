@@ -1,25 +1,44 @@
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
+    RewriteEngine on
 
-    RewriteEngine On
+    # Redirect www to non-www and enforce HTTPS
+    RewriteCond %{HTTP_HOST} ^www\. [NC,OR]
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://api.ashanhimantha.com%{REQUEST_URI} [L,R=301,NE]
 
-    # Handle Authorization Header
-    RewriteCond %{HTTP:Authorization} .
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    # Handle Laravel routing
+    RewriteCond %{REQUEST_URI} !^public
+    RewriteRule ^(.*)$ public/$1 [L]
 
-    # Handle X-XSRF-Token Header
-    RewriteCond %{HTTP:x-xsrf-token} .
-    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
-
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
-
-    # Send Requests To Front Controller...
+    # Handle Laravel routing for non-existing directories and files
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.+)$ index.php?/$1 [L]
     RewriteRule ^ index.php [L]
 </IfModule>
+
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Disable Directory listing
+Options -Indexes
+
+# Block files which need to be hidden
+<Files ~ "\.(env|json|config.js|md|gitignore|gitattributes|lock|example)$">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<FilesMatch "\.(jpg|jpeg|png|gif)$">
+        Order Allow,Deny
+        Allow from all
+    </FilesMatch>
+
+# Block specific files
+<Files ~ "(artisan)$">
+    Order allow,deny
+    Deny from all
+</Files>
