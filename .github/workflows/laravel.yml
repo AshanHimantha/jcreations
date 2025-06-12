@@ -1,39 +1,37 @@
-name: Laravel Auto Deploy
+name: 🚀 Laravel FTP Deploy to Hostinger
 
 on:
   push:
     branches:
-      - main # or your deployment branch
+      - main  # Change this if your deploy branch is different
 
 jobs:
   deploy:
-    name: Deploy to Server via SSH
+    name: 📂 Deploy via FTP
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: ⏬ Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2' # adjust based on your Laravel version
+      - name: 🧩 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2' # Match your Laravel app's PHP version
+          extensions: mbstring, bcmath, xml, ctype, json, tokenizer, curl, zip, openssl, pdo, pdo_mysql
 
-    - name: Install Composer dependencies
-      run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: 📦 Install Composer dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
 
-    - name: Deploy via SSH
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        port: 22
-        script: |
-          cd /
-          git pull origin main
-          composer install --no-interaction --prefer-dist --optimize-autoloader
-          php artisan migrate --force
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
+      - name: 🚀 FTP Deploy to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./ 
+          server-dir: / 
+          protocol: ftp
+          port: 21
+          log-level: verbose
