@@ -209,10 +209,17 @@ class BannerController extends Controller
      *         )
      *     ),
      *     @OA\Response(
+     *         response=400,
+     *         description="Invalid banner type",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Invalid banner type")
+     *         )
+     *     ),
+     *     @OA\Response(
      *         response=404,
      *         description="No active banner found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="No active banner found")
+     *             @OA\Property(property="message", type="string", example="No active banner found for this type")
      *         )
      *     ),
      *     @OA\Response(
