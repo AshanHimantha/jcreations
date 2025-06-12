@@ -1,22 +1,15 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Redirect www to non-www
-    RewriteCond %{HTTP_HOST} ^www\. [NC]
-    RewriteRule ^ https://jcreations.1000dtechnology.com%{REQUEST_URI} [L,R=301,NE]
+    # Force HTTPS and remove www
+    RewriteCond %{HTTPS} off [OR]
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    RewriteRule ^ https://api.ashanhimantha.com%{REQUEST_URI} [L,R=301,NE]
 
-    # Force HTTPS
-    RewriteCond %{HTTPS} off
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
-
-    # Redirect all requests to the /public folder (Laravel structure)
-    RewriteCond %{REQUEST_URI} !^/public
-    RewriteRule ^(.*)$ public/$1 [L]
-
-    # Laravel-friendly routing (within /public)
+    # Laravel URL Rewriting
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ public/index.php [L]
+    RewriteRule ^ index.php [L]
 </IfModule>
 
 <IfModule mod_headers.c>
@@ -28,20 +21,20 @@
 # Disable directory listing
 Options -Indexes
 
-# Block sensitive files
-<Files ~ "\.(env|json|config.js|md|gitignore|gitattributes|lock|example)$">
+# Hide sensitive files
+<FilesMatch "\.(env|json|config.js|md|gitignore|gitattributes|lock|example)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block artisan file if it's somehow exposed
+<Files "artisan">
     Order allow,deny
     Deny from all
 </Files>
 
 # Allow image files
 <FilesMatch "\.(jpg|jpeg|png|gif)$">
-    Order allow,deny
+    Order Allow,Deny
     Allow from all
 </FilesMatch>
-
-# Block access to artisan
-<Files ~ "^(artisan)$">
-    Order allow,deny
-    Deny from all
-</Files>
