@@ -441,6 +441,22 @@
                             }
                         }
                     },
+                    "400": {
+                        "description": "Invalid banner type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid banner type"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "description": "No active banner found",
                         "content": {
@@ -449,7 +465,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "No active banner found"
+                                            "example": "No active banner found for this type"
                                         }
                                     },
                                     "type": "object"
@@ -643,6 +659,12 @@
                                         "type": "integer",
                                         "example": 2
                                     },
+                                    "wish": {
+                                        "description": "Custom message for cake decoration",
+                                        "type": "string",
+                                        "example": "Happy Birthday Ashan",
+                                        "nullable": true
+                                    },
                                     "cart_id": {
                                         "description": "Required for guest users to identify their cart",
                                         "type": "integer",
@@ -695,7 +717,7 @@
                     "Cart Items"
                 ],
                 "summary": "Update cart item",
-                "description": "Updates the quantity of an item in the cart. Requires cart_id for guest users.",
+                "description": "Updates the quantity and wish message of an item in the cart. Requires cart_id for guest users.",
                 "operationId": "103627d0762186830290d892b3e990d5",
                 "parameters": [
                     {
@@ -721,6 +743,12 @@
                                     "quantity": {
                                         "type": "integer",
                                         "example": 3
+                                    },
+                                    "wish": {
+                                        "description": "Custom message for cake decoration",
+                                        "type": "string",
+                                        "example": "Happy Birthday Ashan",
+                                        "nullable": true
                                     },
                                     "cart_id": {
                                         "description": "Required for guest users to identify their cart",

@@ -52,6 +52,7 @@ class CartItem extends Model
         'cart_id',
         'product_id',
         'quantity',
+        'wish'
     ];
 
     /**

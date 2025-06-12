@@ -121,6 +121,7 @@ class OrderController extends Controller
                 'quantity' => $item->quantity,
                 'unit_price' => $item->product->price * ((100 - $item->product->discount_percentage) / 100),
                 'total_price' => $item->subtotal,
+                'wish' => $item->wish ?? null, // Add wish field
             ]);
         }
 
@@ -306,6 +307,7 @@ class OrderController extends Controller
                 'quantity' => $item->quantity,
                 'unit_price' => $item->product->price * ((100 - $item->product->discount_percentage) / 100),
                 'total_price' => $item->subtotal,
+                'wish' => $item->wish ?? null, // Add wish field
             ]);
             
             $orderItems[] = [
@@ -313,6 +315,7 @@ class OrderController extends Controller
                 'quantity' => $item->quantity,
                 'unit_price' => number_format($item->product->price * ((100 - $item->product->discount_percentage) / 100), 2),
                 'subtotal' => number_format($item->subtotal, 2),
+                'wish' => $item->wish ?? null, // Add wish to response array
             ];
         }
 
@@ -1060,6 +1063,8 @@ class OrderController extends Controller
  *     @OA\Property(property="quantity", type="integer", example=2),
  *     @OA\Property(property="unit_price", type="number", format="float", example=75.38),
  *     @OA\Property(property="total_price", type="number", format="float", example=150.75),
+ *     @OA\Property(property="wish", type="string", nullable=true, example="Happy Birthday Ashan",
+ *                  description="Custom message for cake decoration"),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-04-27T10:30:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-04-27T10:30:00Z")
  * )

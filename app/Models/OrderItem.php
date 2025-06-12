@@ -17,6 +17,7 @@ class OrderItem extends Model
         'unit_price',
         'total_price',
         'product_id', 
+        'wish'
     ];
 
     protected $casts = [

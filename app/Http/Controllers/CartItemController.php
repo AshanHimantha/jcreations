@@ -41,6 +41,8 @@ class CartItemController extends Controller
      *             required={"product_id", "quantity"},
      *             @OA\Property(property="product_id", type="integer", example=1),
      *             @OA\Property(property="quantity", type="integer", example=2),
+     *             @OA\Property(property="wish", type="string", nullable=true, example="Happy Birthday Ashan",
+     *                          description="Custom message for cake decoration"),
      *             @OA\Property(property="cart_id", type="integer", nullable=true, example=1,
      *                          description="Required for guest users to identify their cart")
      *         )
@@ -64,7 +66,8 @@ class CartItemController extends Controller
         try {
             $validated = $request->validate([
                 'product_id' => 'required|integer|exists:products,id',
-                'quantity' => 'required|integer|min:1'
+                'quantity' => 'required|integer|min:1',
+                'wish' => 'nullable|string|max:255'
             ]);
             
             $result = $this->cartService->getOrCreateCart($request);
@@ -86,15 +89,19 @@ class CartItemController extends Controller
                 ->first();
                 
             if ($cartItem) {
-                // Update quantity if already in cart
+                // Update quantity and wish if already in cart
                 $cartItem->quantity += $validated['quantity'];
+                if (isset($validated['wish'])) {
+                    $cartItem->wish = $validated['wish'];
+                }
                 $cartItem->save();
             } else {
                 // Add new item to cart
                 $cartItem = CartItem::create([
                     'cart_id' => $cart->id,
                     'product_id' => $validated['product_id'],
-                    'quantity' => $validated['quantity']
+                    'quantity' => $validated['quantity'],
+                    'wish' => $validated['wish'] ?? null
                 ]);
             }
             
@@ -121,7 +128,7 @@ class CartItemController extends Controller
      * @OA\Put(
      *     path="/api/cart/items/{id}",
      *     summary="Update cart item",
-     *     description="Updates the quantity of an item in the cart. Requires cart_id for guest users.",
+     *     description="Updates the quantity and wish message of an item in the cart. Requires cart_id for guest users.",
      *     tags={"Cart Items"},
      *     @OA\Parameter(
      *         name="id",
@@ -135,6 +142,8 @@ class CartItemController extends Controller
      *         @OA\JsonContent(
      *             required={"quantity"},
      *             @OA\Property(property="quantity", type="integer", example=3),
+     *             @OA\Property(property="wish", type="string", nullable=true, example="Happy Birthday Ashan",
+     *                          description="Custom message for cake decoration"),
      *             @OA\Property(property="cart_id", type="integer", nullable=true, example=1,
      *                          description="Required for guest users to identify their cart")
      *         )
@@ -157,7 +166,8 @@ class CartItemController extends Controller
     {
         try {
             $validated = $request->validate([
-                'quantity' => 'required|integer|min:1'
+                'quantity' => 'required|integer|min:1',
+                'wish' => 'nullable|string|max:255'
             ]);
             
             $result = $this->cartService->getOrCreateCart($request);
@@ -168,8 +178,11 @@ class CartItemController extends Controller
                 ->where('id', $id)
                 ->firstOrFail();
                 
-            // Update quantity
+            // Update quantity and wish
             $cartItem->quantity = $validated['quantity'];
+            if (isset($validated['wish'])) {
+                $cartItem->wish = $validated['wish'];
+            }
             $cartItem->save();
             
             return response()->json([
