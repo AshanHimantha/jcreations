@@ -1,0 +1,39 @@
+name: Laravel Auto Deploy
+
+on:
+  push:
+    branches:
+      - main # or your deployment branch
+
+jobs:
+  deploy:
+    name: Deploy to Server via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2' # adjust based on your Laravel version
+
+    - name: Install Composer dependencies
+      run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        script: |
+          cd /
+          git pull origin main
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
