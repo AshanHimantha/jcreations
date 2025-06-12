@@ -154,7 +154,8 @@ class ProductController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'description' => 'nullable|string', // Add as nullable
+                'description' => 'nullable|string',
+                'character_count' => 'nullable|integer|min:0',
                 'category_id' => 'required|integer|exists:categories,id',
                 'price' => 'required|numeric|min:0',
                 'discount_percentage' => 'nullable|numeric|min:0|max:100',
@@ -164,6 +165,11 @@ class ProductController extends Controller
                 'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
+
+            // Calculate character count if not provided
+            if (!isset($validated['character_count']) && isset($validated['description'])) {
+                $validated['character_count'] = strlen($validated['description'] ?? '');
+            }
 
             // Validate that discounted_price is less than regular price
             if (isset($validated['discounted_price']) && $validated['discounted_price'] >= $validated['price']) {
@@ -180,7 +186,8 @@ class ProductController extends Controller
 
             $product = new Product();
             $product->name = $validated['name'];
-            $product->description = $validated['description'] ?? ""; // Use null coalescing operator
+            $product->description = $validated['description'] ?? "";
+            $product->character_count = $validated['character_count'] ?? strlen($validated['description'] ?? '');
             $product->category_id = $validated['category_id'];
             $product->price = $validated['price'];
             $product->discount_percentage = $validated['discount_percentage'] ?? 0;
@@ -315,6 +322,10 @@ class ProductController extends Controller
                 $rules['description'] = 'nullable|string';
             }
             
+            if ($request->has('character_count')) {
+                $rules['character_count'] = 'nullable|integer|min:0';
+            }
+            
             if ($request->has('category_id')) {
                 $rules['category_id'] = 'integer|exists:categories,id';
             }
@@ -379,6 +390,14 @@ class ProductController extends Controller
             
             if ($request->has('description')) {
                 $product->description = $validated['description'] ?? "";
+                // Auto-calculate character count if not explicitly provided
+                if (!$request->has('character_count')) {
+                    $product->character_count = strlen($validated['description'] ?? '');
+                }
+            }
+            
+            if ($request->has('character_count')) {
+                $product->character_count = $validated['character_count'];
             }
             
             if ($request->has('category_id')) {

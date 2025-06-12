@@ -35,6 +35,7 @@ class Product extends Model
         'name',
         'description',
         'category_id',
+        'character_count',
         'price',
         'discount_percentage',
         'status',
