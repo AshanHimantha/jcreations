@@ -262,29 +262,37 @@
                 "tags": [
                     "Banners"
                 ],
-                "summary": "Get active banner",
-                "description": "Returns the currently active banner",
-                "operationId": "getBanner",
+                "summary": "Get active banners",
+                "description": "Returns the currently active mobile and desktop banners",
+                "operationId": "getBanners",
                 "responses": {
                     "200": {
                         "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Banner"
+                                    "properties": {
+                                        "mobile": {
+                                            "$ref": "#/components/schemas/Banner"
+                                        },
+                                        "desktop": {
+                                            "$ref": "#/components/schemas/Banner"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "404": {
-                        "description": "No active banner found",
+                        "description": "No active banners found",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "No active banner found"
+                                            "example": "No active banners found"
                                         }
                                     },
                                     "type": "object"
@@ -301,7 +309,7 @@
                     "Banners"
                 ],
                 "summary": "Upload a new banner",
-                "description": "Uploads a new banner and replaces any existing one",
+                "description": "Uploads a new banner and replaces any existing one of the same type",
                 "operationId": "storeBanner",
                 "requestBody": {
                     "required": true,
@@ -313,6 +321,15 @@
                                         "description": "Banner image file (max 2MB)",
                                         "type": "string",
                                         "format": "binary"
+                                    },
+                                    "type": {
+                                        "description": "Banner type",
+                                        "type": "string",
+                                        "enum": [
+                                            "mobile",
+                                            "desktop"
+                                        ],
+                                        "example": "desktop"
                                     },
                                     "title": {
                                         "description": "Banner title",
@@ -382,14 +399,31 @@
                         "sanctum": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/admin/banner/{type}": {
             "delete": {
                 "tags": [
                     "Banners"
                 ],
-                "summary": "Delete active banner",
-                "description": "Deletes the currently active banner",
+                "summary": "Delete banner by type",
+                "description": "Deletes the active banner of the specified type",
                 "operationId": "deleteBanner",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "Banner type",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "mobile",
+                                "desktop"
+                            ]
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Banner deleted successfully",

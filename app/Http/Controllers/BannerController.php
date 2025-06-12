@@ -16,46 +16,53 @@ use Illuminate\Support\Facades\Validator;
 class BannerController extends Controller
 {
     /**
-     * Get the current active banner
+     * Get the current active banners
      * 
      * @OA\Get(
      *     path="/api/banner",
-     *     summary="Get active banner",
-     *     description="Returns the currently active banner",
-     *     operationId="getBanner",
+     *     summary="Get active banners",
+     *     description="Returns the currently active mobile and desktop banners",
+     *     operationId="getBanners",
      *     tags={"Banners"},
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
-     *         @OA\JsonContent(ref="#/components/schemas/Banner")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="mobile", ref="#/components/schemas/Banner"),
+     *             @OA\Property(property="desktop", ref="#/components/schemas/Banner")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="No active banner found",
+     *         description="No active banners found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="No active banner found")
+     *             @OA\Property(property="message", type="string", example="No active banners found")
      *         )
      *     )
      * )
      */
     public function show()
     {
-        $banner = Banner::where('is_active', true)->first();
+        $mobileBanner = Banner::where('is_active', true)->where('type', 'mobile')->first();
+        $desktopBanner = Banner::where('is_active', true)->where('type', 'desktop')->first();
         
-        if (!$banner) {
-            return response()->json(['message' => 'No active banner found'], 404);
+        if (!$mobileBanner && !$desktopBanner) {
+            return response()->json(['message' => 'No active banners found'], 404);
         }
         
-        return response()->json($banner);
+        return response()->json([
+            'mobile' => $mobileBanner,
+            'desktop' => $desktopBanner
+        ]);
     }
 
     /**
-     * Store a new banner and replace any existing one
+     * Store a new banner and replace any existing one of the same type
      * 
      * @OA\Post(
      *     path="/api/admin/banner",
      *     summary="Upload a new banner",
-     *     description="Uploads a new banner and replaces any existing one",
+     *     description="Uploads a new banner and replaces any existing one of the same type",
      *     operationId="storeBanner",
      *     tags={"Banners"},
      *     security={{"sanctum":{}}},
@@ -69,6 +76,13 @@ class BannerController extends Controller
      *                     type="string",
      *                     format="binary",
      *                     description="Banner image file (max 2MB)"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="type",
+     *                     type="string",
+     *                     enum={"mobile", "desktop"},
+     *                     description="Banner type",
+     *                     example="desktop"
      *                 ),
      *                 @OA\Property(
      *                     property="title",
@@ -120,6 +134,7 @@ class BannerController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'image' => 'required|image|max:2048', // Max 2MB
+            'type' => 'required|in:mobile,desktop',
             'title' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string|max:255',
             'link' => 'nullable|url|max:255',
@@ -132,11 +147,15 @@ class BannerController extends Controller
         // Handle the file upload
         $imagePath = $request->file('image')->store('banners', 'public');
         
-        // Deactivate all existing banners
-        Banner::where('is_active', true)->update(['is_active' => false]);
+        // Deactivate existing banners of the same type
+        Banner::where('is_active', true)
+              ->where('type', $request->type)
+              ->update(['is_active' => false]);
         
-        // Delete old banner images to save space
-        $oldBanners = Banner::where('is_active', false)->get();
+        // Delete old banner images of the same type to save space
+        $oldBanners = Banner::where('is_active', false)
+                           ->where('type', $request->type)
+                           ->get();
         foreach ($oldBanners as $oldBanner) {
             // Remove the file
             if (Storage::disk('public')->exists($oldBanner->image_path)) {
@@ -144,12 +163,15 @@ class BannerController extends Controller
             }
         }
         
-        // Delete old banner records
-        Banner::where('is_active', false)->delete();
+        // Delete old banner records of the same type
+        Banner::where('is_active', false)
+              ->where('type', $request->type)
+              ->delete();
 
         // Create the new banner
         $banner = Banner::create([
             'image_path' => $imagePath,
+            'type' => $request->type,
             'title' => $request->title,
             'subtitle' => $request->subtitle,
             'link' => $request->link,
@@ -160,15 +182,25 @@ class BannerController extends Controller
     }
 
     /**
-     * Delete the current banner
+     * Delete banner by type
      * 
      * @OA\Delete(
-     *     path="/api/admin/banner",
-     *     summary="Delete active banner",
-     *     description="Deletes the currently active banner",
+     *     path="/api/admin/banner/{type}",
+     *     summary="Delete banner by type",
+     *     description="Deletes the active banner of the specified type",
      *     operationId="deleteBanner",
      *     tags={"Banners"},
      *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="path",
+     *         description="Banner type",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"mobile", "desktop"}
+     *         )
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Banner deleted successfully",
@@ -193,12 +225,18 @@ class BannerController extends Controller
      *     )
      * )
      */
-    public function destroy()
+    public function destroy($type)
     {
-        $banner = Banner::where('is_active', true)->first();
+        if (!in_array($type, ['mobile', 'desktop'])) {
+            return response()->json(['message' => 'Invalid banner type'], 400);
+        }
+
+        $banner = Banner::where('is_active', true)
+                       ->where('type', $type)
+                       ->first();
         
         if (!$banner) {
-            return response()->json(['message' => 'No active banner found'], 404);
+            return response()->json(['message' => 'No active banner found for this type'], 404);
         }
         
         // Delete the image file
