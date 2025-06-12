@@ -1,37 +1,34 @@
-name: 🚀 Laravel FTP Deploy to Hostinger
+name: Laravel Auto Deploy (FTP)
 
 on:
   push:
     branches:
-      - main  # Change this if your deploy branch is different
+      - main
 
 jobs:
   deploy:
-    name: 📂 Deploy via FTP
+    name: Deploy Laravel via FTP to Hostinger
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⏬ Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: 🧩 Setup PHP
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2' # Match your Laravel app's PHP version
-          extensions: mbstring, bcmath, xml, ctype, json, tokenizer, curl, zip, openssl, pdo, pdo_mysql
+          php-version: '8.2'
 
-      - name: 📦 Install Composer dependencies
-        run: |
-          composer install --no-dev --optimize-autoloader
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: 🚀 FTP Deploy to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4
+      - name: Upload files via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./ 
-          server-dir: / 
-          protocol: ftp
-          port: 21
-          log-level: verbose
+          server-dir: /  # ⚠️ Change this if your Laravel app is in a subdirectory
+          local-dir: ./               # Deploy from the root of your GitHub repo
+          dangerous-clean-slate: false # Set to true if you want to wipe remote first (use with caution)
+
