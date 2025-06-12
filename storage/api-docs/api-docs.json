@@ -1230,6 +1230,273 @@
                 ]
             }
         },
+        "/api/cod-limit": {
+            "get": {
+                "tags": [
+                    "COD Limit"
+                ],
+                "summary": "Get current COD limit",
+                "description": "Returns the current cash on delivery limit settings (public endpoint)",
+                "operationId": "5e6d09bf4e4ab706cde9fbe27ace96f3",
+                "responses": {
+                    "200": {
+                        "description": "COD limit retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "limit_amount": {
+                                                    "type": "string",
+                                                    "example": "5000.00"
+                                                },
+                                                "is_active": {
+                                                    "description": "COD limit status: true=active, false=inactive",
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "COD limit not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "COD limit not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/cod-limit": {
+            "put": {
+                "tags": [
+                    "COD Limit"
+                ],
+                "summary": "Update COD limit",
+                "description": "Updates the cash on delivery limit amount and status",
+                "operationId": "59c298ff1ad9057646fa133deeb48fe1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "limit_amount"
+                                ],
+                                "properties": {
+                                    "limit_amount": {
+                                        "description": "The COD limit amount",
+                                        "type": "number",
+                                        "format": "decimal",
+                                        "example": 7500
+                                    },
+                                    "is_active": {
+                                        "description": "COD limit status: true=active, false=inactive",
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "COD limit updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "COD limit updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "limit_amount": {
+                                                    "type": "string",
+                                                    "example": "7500.00"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "limit_amount": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The limit amount field is required."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/cod-limit/toggle-status": {
+            "patch": {
+                "tags": [
+                    "COD Limit"
+                ],
+                "summary": "Toggle COD limit status",
+                "description": "Activates or deactivates the COD limit",
+                "operationId": "1c4a78b698a40a1355def3fdf3d1e50c",
+                "responses": {
+                    "200": {
+                        "description": "COD limit status toggled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "COD limit status toggled successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "limit_amount": {
+                                                    "type": "string",
+                                                    "example": "5000.00"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "COD limit not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "COD limit not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/locations": {
             "get": {
                 "tags": [
@@ -4044,6 +4311,10 @@
         {
             "name": "Categories",
             "description": "API endpoints for category management"
+        },
+        {
+            "name": "COD Limit",
+            "description": "API endpoints for Cash on Delivery limit management"
         },
         {
             "name": "Delivery Locations",

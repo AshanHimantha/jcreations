@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CodLimitController;
 use App\Http\Controllers\MobileNumberController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
@@ -69,6 +70,8 @@ Route::get('/orders/{id}', [OrderController::class, 'getOrder']);
 
 Route::get('/banner', [BannerController::class, 'show']);
 
+Route::get('/cod-limit', [CodLimitController::class, 'show']);
+
 // Add these routes to your existing routes
 Route::post('/orders/online', [OrderController::class, 'createOnlineOrder']);
 
@@ -122,6 +125,10 @@ Route::prefix('admin')->group(function () {
             Route::post('/mobile-numbers', [MobileNumberController::class, 'store']);
             Route::put('/mobile-numbers/{mobile_number}', [MobileNumberController::class, 'update']);
             Route::delete('/mobile-numbers/{mobile_number}', [MobileNumberController::class, 'destroy']);
+
+            Route::put('/cod-limit', [CodLimitController::class, 'update']);
+            Route::patch('/cod-limit/toggle-status', [CodLimitController::class, 'toggleStatus']);
+    
 
            
         });
