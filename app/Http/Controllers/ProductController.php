@@ -691,7 +691,7 @@ class ProductController extends Controller
     public function dailyDeals($limit = 20)
     {
         // Validate and constrain the limit
-        $limit = is_numeric($limit) ? (int)$limit : 20;  
+        $limit = is_numeric($limit) ? (int)$limit : 8;  
         $limit = min(max($limit, 1), 100);  // Between 1 and 100
         
         $products = Product::with('category')
