@@ -696,7 +696,7 @@ class ProductController extends Controller
         
         $products = Product::with('category')
                     ->where('status', '!=', 'deactive')
-                    ->where('daily_deals', true)
+                    ->where('daily_deals', '=', 1)
                     ->orderBy('created_at', 'desc')
                     ->limit($limit)
                     ->get();
