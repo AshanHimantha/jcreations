@@ -667,13 +667,13 @@ class ProductController extends Controller
      * Display a listing of daily deals products.
      * 
      * @OA\Get(
-     *     path="/api/products/daily-deals",
+     *     path="/api/products/daily-deals/{limit?}",
      *     summary="Get daily deals products",
      *     description="Returns a list of active products marked as daily deals",
      *     tags={"Products"},
      *     @OA\Parameter(
      *         name="limit",
-     *         in="query",
+     *         in="path",
      *         description="Maximum number of products to return (default: 20, max: 100)",
      *         required=false,
      *         @OA\Schema(type="integer", default=20, minimum=1, maximum=100)
@@ -688,11 +688,8 @@ class ProductController extends Controller
      *     )
      * )
      */
- public function getDailyDeals(Request $request)
+ public function getDeals($limit = 20)
 {
-    // Get limit from query parameter, default to 20
-    $limit = $request->query('limit', 20);
-    
     // Validate and constrain the limit
     $limit = is_numeric($limit) ? (int)$limit : 20;
     $limit = min(max($limit, 1), 100);  // Between 1 and 100
