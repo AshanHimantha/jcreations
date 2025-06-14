@@ -3610,7 +3610,9 @@
                         "required": false,
                         "schema": {
                             "type": "integer",
-                            "default": 20
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
                         }
                     }
                 ],
@@ -3622,70 +3624,7 @@
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer",
-                                                "example": 1
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "example": "Smartphone XYZ"
-                                            },
-                                            "description": {
-                                                "type": "string",
-                                                "example": "Latest smartphone with advanced features"
-                                            },
-                                            "images": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "category_id": {
-                                                "type": "integer",
-                                                "example": 1
-                                            },
-                                            "category": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer",
-                                                        "example": 1
-                                                    },
-                                                    "name": {
-                                                        "type": "string",
-                                                        "example": "Electronics"
-                                                    },
-                                                    "img": {
-                                                        "type": "string",
-                                                        "example": "categories/electronics.jpg"
-                                                    }
-                                                },
-                                                "type": "object"
-                                            },
-                                            "price": {
-                                                "type": "number",
-                                                "format": "float",
-                                                "example": 999.99
-                                            },
-                                            "discount_percentage": {
-                                                "type": "number",
-                                                "format": "float",
-                                                "example": 10.5
-                                            },
-                                            "status": {
-                                                "type": "string",
-                                                "example": "in_stock"
-                                            },
-                                            "created_at": {
-                                                "type": "string",
-                                                "format": "date-time"
-                                            },
-                                            "updated_at": {
-                                                "type": "string",
-                                                "format": "date-time"
-                                            }
-                                        },
-                                        "type": "object"
+                                        "$ref": "#/components/schemas/Product"
                                     }
                                 }
                             }
@@ -3700,8 +3639,20 @@
                     "Products"
                 ],
                 "summary": "Get all products (including deactivated ones)",
-                "description": "Returns a list of all products (admin only)",
+                "description": "Returns a list of all products including deactivated ones (admin only)",
                 "operationId": "947b95d08da896fa7691a5368b531d7b",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "path",
+                        "description": "Maximum number of products to return (no maximum for admin)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "List of all products",
@@ -3748,30 +3699,38 @@
                                     "description",
                                     "category_id",
                                     "price",
-                                    "status"
+                                    "status",
+                                    "image1"
                                 ],
                                 "properties": {
                                     "name": {
                                         "type": "string",
+                                        "maxLength": 255,
                                         "example": "Smartphone XYZ"
                                     },
                                     "description": {
                                         "type": "string",
                                         "example": "Latest smartphone with advanced features"
                                     },
+                                    "character_count": {
+                                        "description": "Character count of description (auto-calculated if not provided)",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "example": 50
+                                    },
                                     "image1": {
-                                        "description": "First product image",
-                                        "type": "file",
+                                        "description": "First product image (required)",
+                                        "type": "string",
                                         "format": "binary"
                                     },
                                     "image2": {
                                         "description": "Second product image (optional)",
-                                        "type": "file",
+                                        "type": "string",
                                         "format": "binary"
                                     },
                                     "image3": {
                                         "description": "Third product image (optional)",
-                                        "type": "file",
+                                        "type": "string",
                                         "format": "binary"
                                     },
                                     "category_id": {
@@ -3781,17 +3740,21 @@
                                     "price": {
                                         "type": "number",
                                         "format": "float",
+                                        "minimum": 0,
                                         "example": 999.99
                                     },
                                     "discount_percentage": {
                                         "type": "number",
                                         "format": "float",
+                                        "maximum": 100,
+                                        "minimum": 0,
                                         "example": 10.5
                                     },
                                     "discounted_price": {
                                         "description": "Direct discounted price (alternative to discount_percentage)",
                                         "type": "number",
                                         "format": "float",
+                                        "minimum": 0,
                                         "example": 899.99
                                     },
                                     "status": {
@@ -3802,6 +3765,11 @@
                                             "out_of_stock"
                                         ],
                                         "example": "in_stock"
+                                    },
+                                    "daily_deals": {
+                                        "description": "Mark as daily deals product",
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 },
                                 "type": "object"
@@ -3821,13 +3789,48 @@
                         }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthenticated"
                     },
                     "403": {
                         "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error creating product"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -3869,7 +3872,20 @@
                         }
                     },
                     "404": {
-                        "description": "Product not found"
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -3880,7 +3896,7 @@
                     "Products"
                 ],
                 "summary": "Update product",
-                "description": "Updates an existing product",
+                "description": "Updates an existing product (all fields are optional)",
                 "operationId": "4c34bb1137dacdbc234e97d171ec0111",
                 "parameters": [
                     {
@@ -3901,25 +3917,32 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
+                                        "maxLength": 255,
                                         "example": "Updated Smartphone XYZ"
                                     },
                                     "description": {
                                         "type": "string",
                                         "example": "Updated description"
                                     },
+                                    "character_count": {
+                                        "description": "Character count of description (auto-calculated if not provided)",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "example": 50
+                                    },
                                     "image1": {
                                         "description": "First product image",
-                                        "type": "file",
+                                        "type": "string",
                                         "format": "binary"
                                     },
                                     "image2": {
                                         "description": "Second product image",
-                                        "type": "file",
+                                        "type": "string",
                                         "format": "binary"
                                     },
                                     "image3": {
                                         "description": "Third product image",
-                                        "type": "file",
+                                        "type": "string",
                                         "format": "binary"
                                     },
                                     "category_id": {
@@ -3929,12 +3952,22 @@
                                     "price": {
                                         "type": "number",
                                         "format": "float",
+                                        "minimum": 0,
                                         "example": 899.99
                                     },
                                     "discount_percentage": {
                                         "type": "number",
                                         "format": "float",
+                                        "maximum": 100,
+                                        "minimum": 0,
                                         "example": 15
+                                    },
+                                    "discounted_price": {
+                                        "description": "Direct discounted price (alternative to discount_percentage)",
+                                        "type": "number",
+                                        "format": "float",
+                                        "minimum": 0,
+                                        "example": 799.99
                                     },
                                     "status": {
                                         "type": "string",
@@ -3944,6 +3977,11 @@
                                             "out_of_stock"
                                         ],
                                         "example": "in_stock"
+                                    },
+                                    "daily_deals": {
+                                        "description": "Mark as daily deals product",
+                                        "type": "boolean",
+                                        "example": false
                                     },
                                     "_method": {
                                         "type": "string",
@@ -3968,16 +4006,64 @@
                         }
                     },
                     "404": {
-                        "description": "Product not found"
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthenticated"
                     },
                     "403": {
                         "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error updating product"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -3991,7 +4077,7 @@
                     "Products"
                 ],
                 "summary": "Delete product",
-                "description": "Deletes a product",
+                "description": "Deletes a product and all associated images",
                 "operationId": "2ed7f4be9e6e2b3aba212b27b3aed2b9",
                 "parameters": [
                     {
@@ -4010,7 +4096,20 @@
                         "description": "Product deleted successfully"
                     },
                     "404": {
-                        "description": "Product not found"
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthenticated"
@@ -4032,7 +4131,7 @@
                     "Products"
                 ],
                 "summary": "Search products with optional limit",
-                "description": "Search products by name, category, price range or status",
+                "description": "Search products by name, category, price range or status (public endpoint)",
                 "operationId": "4047ea21e6364b9d18344b855d27bb50",
                 "parameters": [
                     {
@@ -4042,7 +4141,9 @@
                         "required": false,
                         "schema": {
                             "type": "integer",
-                            "default": 20
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
                         }
                     },
                     {
@@ -4051,7 +4152,8 @@
                         "description": "Search term for product name or description",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "example": "smartphone"
                         }
                     },
                     {
@@ -4060,7 +4162,8 @@
                         "description": "Filter by category ID",
                         "required": false,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     },
                     {
@@ -4069,7 +4172,10 @@
                         "description": "Minimum price",
                         "required": false,
                         "schema": {
-                            "type": "number"
+                            "type": "number",
+                            "format": "float",
+                            "minimum": 0,
+                            "example": 100
                         }
                     },
                     {
@@ -4078,26 +4184,69 @@
                         "description": "Maximum price",
                         "required": false,
                         "schema": {
-                            "type": "number"
+                            "type": "number",
+                            "format": "float",
+                            "minimum": 0,
+                            "example": 1000
                         }
                     },
                     {
                         "name": "status",
                         "in": "query",
-                        "description": "Product status",
+                        "description": "Product status (only active products shown)",
                         "required": false,
                         "schema": {
                             "type": "string",
                             "enum": [
                                 "in_stock",
                                 "out_of_stock"
-                            ]
+                            ],
+                            "example": "in_stock"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "List of products matching search criteria",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Product"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products/daily-deals/{limit?}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get daily deals products",
+                "description": "Returns a list of active products marked as daily deals",
+                "operationId": "4ab300c2f56b5d324e0e93971e88655c",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "path",
+                        "description": "Maximum number of products to return (default: 20, max: 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of daily deals products",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -4287,38 +4436,86 @@
                 ],
                 "properties": {
                     "id": {
+                        "description": "Product ID",
                         "type": "integer",
                         "example": 1
                     },
                     "name": {
+                        "description": "Product name",
                         "type": "string",
+                        "maxLength": 255,
                         "example": "Smartphone XYZ"
                     },
                     "description": {
+                        "description": "Product description",
                         "type": "string",
                         "example": "Latest smartphone with advanced features"
                     },
+                    "character_count": {
+                        "description": "Character count of description",
+                        "type": "integer",
+                        "minimum": 0,
+                        "example": 50
+                    },
                     "images": {
+                        "description": "Array of product image paths",
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "example": [
+                            "products/image1.jpg",
+                            "products/image2.jpg"
+                        ]
                     },
                     "category_id": {
+                        "description": "Category ID",
                         "type": "integer",
                         "example": 1
                     },
+                    "category": {
+                        "description": "Product category (included when relationship is loaded)",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Electronics"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "Electronic devices and accessories"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "type": "object"
+                    },
                     "price": {
+                        "description": "Original price",
                         "type": "number",
                         "format": "float",
+                        "minimum": 0,
                         "example": 999.99
                     },
                     "discount_percentage": {
+                        "description": "Discount percentage",
                         "type": "number",
                         "format": "float",
+                        "maximum": 100,
+                        "minimum": 0,
                         "example": 10.5
                     },
                     "status": {
+                        "description": "Product status",
                         "type": "string",
                         "enum": [
                             "deactive",
@@ -4327,19 +4524,26 @@
                         ],
                         "example": "in_stock"
                     },
+                    "daily_deals": {
+                        "description": "Whether product is part of daily deals",
+                        "type": "boolean",
+                        "example": false
+                    },
                     "discounted_price": {
-                        "description": "Calculated price after applying discount",
+                        "description": "Calculated price after applying discount (computed attribute)",
                         "type": "number",
                         "format": "float",
                         "example": 899.99
                     },
                     "created_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "example": "2025-06-14T10:30:00Z"
                     },
                     "updated_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "example": "2025-06-14T10:30:00Z"
                     }
                 },
                 "type": "object"
