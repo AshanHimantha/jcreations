@@ -40,7 +40,13 @@ use Illuminate\Database\Eloquent\Model;
  *         example="in_stock",
  *         description="Product status"
  *     ),
- *     @OA\Property(property="daily_deals", type="boolean", example=false, description="Whether product is part of daily deals"),
+ *     @OA\Property(
+ *         property="daily_deals", 
+ *         type="string", 
+ *         enum={"active", "deactive"}, 
+ *         example="deactive",
+ *         description="Daily deals status"
+ *     ),
  *     @OA\Property(property="discounted_price", type="number", format="float", example=899.99, description="Calculated price after applying discount (computed attribute)"),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-14T10:30:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-14T10:30:00Z")
@@ -73,8 +79,7 @@ class Product extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'images' => 'array',
-        'daily_deals' => 'boolean'
+        'images' => 'array'
     ];
 
     /**

@@ -128,7 +128,7 @@ class ProductController extends Controller
      *                 @OA\Property(property="discount_percentage", type="number", format="float", minimum=0, maximum=100, example=10.5),
      *                 @OA\Property(property="discounted_price", type="number", format="float", minimum=0, example=899.99, description="Direct discounted price (alternative to discount_percentage)"),
      *                 @OA\Property(property="status", type="string", enum={"deactive", "in_stock", "out_of_stock"}, example="in_stock"),
-     *                 @OA\Property(property="daily_deals", type="boolean", example=false, description="Mark as daily deals product")
+     *                 @OA\Property(property="daily_deals", type="string", enum={"active", "deactive"}, example="deactive", description="Daily deals status")
      *             )
      *         )
      *     ),
@@ -169,7 +169,7 @@ class ProductController extends Controller
                 'discount_percentage' => 'nullable|numeric|min:0|max:100',
                 'discounted_price' => 'nullable|numeric|min:0',
                 'status' => ['required', Rule::in(['deactive', 'in_stock', 'out_of_stock'])],
-                'daily_deals' => 'nullable|boolean',
+                'daily_deals' => ['nullable', Rule::in(['active', 'deactive'])],
                 'image1' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -201,7 +201,7 @@ class ProductController extends Controller
             $product->price = $validated['price'];
             $product->discount_percentage = $validated['discount_percentage'] ?? 0;
             $product->status = $validated['status'];
-            $product->daily_deals = $validated['daily_deals'] ?? false;
+            $product->daily_deals = $validated['daily_deals'] ?? 'deactive';
             
             // Handle image uploads
             $images = [];
@@ -312,7 +312,7 @@ class ProductController extends Controller
      *                 @OA\Property(property="discount_percentage", type="number", format="float", minimum=0, maximum=100, example=15),
      *                 @OA\Property(property="discounted_price", type="number", format="float", minimum=0, example=799.99, description="Direct discounted price (alternative to discount_percentage)"),
      *                 @OA\Property(property="status", type="string", enum={"deactive", "in_stock", "out_of_stock"}, example="in_stock"),
-     *                 @OA\Property(property="daily_deals", type="boolean", example=false, description="Mark as daily deals product"),
+     *                 @OA\Property(property="daily_deals", type="string", enum={"active", "deactive"}, example="active", description="Daily deals status"),
      *                 @OA\Property(property="_method", type="string", default="PUT", example="PUT")
      *             )
      *         )
@@ -387,7 +387,7 @@ class ProductController extends Controller
             }
             
             if ($request->has('daily_deals')) {
-                $rules['daily_deals'] = 'boolean';
+                $rules['daily_deals'] = Rule::in(['active', 'deactive']);
             }
             
             if ($request->hasFile('image1')) {
@@ -688,19 +688,19 @@ class ProductController extends Controller
      *     )
      * )
      */
-    public function dailyDeals($limit = 8)
-    {
-        // Validate and constrain the limit
-        $limit = is_numeric($limit) ? (int)$limit : 8;  
-        $limit = min(max($limit, 1), 100);  // Between 1 and 100
-        
-        $products = Product::with('category')
-                    ->where('status', '!=', 'deactive')
-                    ->where('daily_deals', '=', 1)
-                    ->orderBy('created_at', 'desc')
-                    ->limit($limit)
-                    ->get();
-        
-        return response()->json($products);
-    }
+ public function getDailyDeals($limit = 20)
+{
+    // Validate and constrain the limit
+    $limit = is_numeric($limit) ? (int)$limit : 20;
+    $limit = min(max($limit, 1), 100);  // Between 1 and 100
+    
+    $products = Product::where('daily_deals', 'active')
+        ->where('status', '!=', 'deactive') // Also exclude deactivated products
+        ->with('category')
+        ->orderBy('created_at', 'desc')
+        ->limit($limit)
+        ->get();
+    
+    return response()->json($products);
+}
 }
