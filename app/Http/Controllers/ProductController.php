@@ -688,7 +688,7 @@ class ProductController extends Controller
      *     )
      * )
      */
-    public function dailyDeals($limit = 20)
+    public function dailyDeals($limit = 8)
     {
         // Validate and constrain the limit
         $limit = is_numeric($limit) ? (int)$limit : 8;  
