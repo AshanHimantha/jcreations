@@ -47,7 +47,7 @@ Route::get('/categories/{category}', [CategoryController::class, 'show']);
 Route::get('/products/{limit?}', [ProductController::class, 'index']);
 Route::get('/product/single/{id}', [ProductController::class, 'show']);
 Route::get('/products/search/{limit?}', [ProductController::class, 'search']);
-Route::get('/products/daily-deals/{limit?}', [ProductController::class, 'getDailyDeals']);
+Route::get('/products/daily-deals', [ProductController::class, 'getDailyDeals']);
 
 
 // locations
