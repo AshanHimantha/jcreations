@@ -47,10 +47,9 @@ class ProductController extends Controller
         $limit = min(max($limit, 1), 100);  // Between 1 and 100
         
         $products = Product::with('category')
-                    ->where('status', '!=', 'deactive')
-                    ->orderBy('created_at', 'desc')
-                    ->limit($limit)
-                    ->get();
+            ->where('status', '!=', 'deactive')
+            ->take($limit)
+            ->get();
         
         return response()->json($products);
     }
@@ -86,16 +85,8 @@ class ProductController extends Controller
     public function adminIndex($limit = null)
     {
         if ($limit !== null) {
-            // Validate limit is a positive integer
-            $limit = is_numeric($limit) ? (int)$limit : 20;
-            $limit = max($limit, 1);  // Only enforce minimum value of 1
-            
-            $products = Product::with('category')
-                       ->limit($limit)
-                       ->orderBy('created_at', 'desc')
-                       ->get();
+            $products = Product::with('category')->take($limit)->get();
         } else {
-            // Original behavior - get all products with no limit
             $products = Product::with('category')->get();
         }
         
@@ -262,7 +253,7 @@ class ProductController extends Controller
      *         @OA\JsonContent(ref="#/components/schemas/Product")
      *     ),
      *     @OA\Response(
-     *         response=404, 
+     *         response=404,
      *         description="Product not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Product not found")
@@ -286,8 +277,8 @@ class ProductController extends Controller
      * 
      * @OA\Put(
      *     path="/api/admin/products/{product}",
-     *     summary="Update product",
-     *     description="Updates an existing product (all fields are optional)",
+     *     summary="Update a product",
+     *     description="Updates an existing product with new details and optionally new images",
      *     tags={"Products"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
@@ -298,22 +289,22 @@ class ProductController extends Controller
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\RequestBody(
+     *         required=true,
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 @OA\Property(property="name", type="string", maxLength=255, example="Updated Smartphone XYZ"),
-     *                 @OA\Property(property="description", type="string", example="Updated description"),
+     *                 @OA\Property(property="description", type="string", example="Updated smartphone with advanced features"),
      *                 @OA\Property(property="character_count", type="integer", minimum=0, example=50, description="Character count of description (auto-calculated if not provided)"),
      *                 @OA\Property(property="image1", type="string", format="binary", description="First product image"),
      *                 @OA\Property(property="image2", type="string", format="binary", description="Second product image"),
      *                 @OA\Property(property="image3", type="string", format="binary", description="Third product image"),
-     *                 @OA\Property(property="category_id", type="integer", example=2),
-     *                 @OA\Property(property="price", type="number", format="float", minimum=0, example=899.99),
-     *                 @OA\Property(property="discount_percentage", type="number", format="float", minimum=0, maximum=100, example=15),
-     *                 @OA\Property(property="discounted_price", type="number", format="float", minimum=0, example=799.99, description="Direct discounted price (alternative to discount_percentage)"),
+     *                 @OA\Property(property="category_id", type="integer", example=1),
+     *                 @OA\Property(property="price", type="number", format="float", minimum=0, example=999.99),
+     *                 @OA\Property(property="discount_percentage", type="number", format="float", minimum=0, maximum=100, example=10.5),
+     *                 @OA\Property(property="discounted_price", type="number", format="float", minimum=0, example=899.99),
      *                 @OA\Property(property="status", type="string", enum={"deactive", "in_stock", "out_of_stock"}, example="in_stock"),
-     *                 @OA\Property(property="daily_deals", type="string", enum={"active", "deactive"}, example="active", description="Daily deals status"),
-     *                 @OA\Property(property="_method", type="string", default="PUT", example="PUT")
+     *                 @OA\Property(property="daily_deals", type="string", enum={"active", "deactive"}, example="deactive")
      *             )
      *         )
      *     ),
@@ -322,31 +313,10 @@ class ProductController extends Controller
      *         description="Product updated successfully",
      *         @OA\JsonContent(ref="#/components/schemas/Product")
      *     ),
-     *     @OA\Response(
-     *         response=404, 
-     *         description="Product not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Product not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422, 
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Validation failed"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
+     *     @OA\Response(response=404, description="Product not found"),
+     *     @OA\Response(response=422, description="Validation error"),
      *     @OA\Response(response=401, description="Unauthenticated"),
-     *     @OA\Response(response=403, description="Forbidden"),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Error updating product"),
-     *             @OA\Property(property="error", type="string")
-     *         )
-     *     )
+     *     @OA\Response(response=403, description="Forbidden")
      * )
      */
     public function update(Request $request, Product $product)
@@ -520,8 +490,8 @@ class ProductController extends Controller
      * 
      * @OA\Delete(
      *     path="/api/admin/products/{product}",
-     *     summary="Delete product",
-     *     description="Deletes a product and all associated images",
+     *     summary="Delete a product",
+     *     description="Deletes a product and its associated images",
      *     tags={"Products"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
@@ -532,16 +502,13 @@ class ProductController extends Controller
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
-     *         response=204, 
-     *         description="Product deleted successfully"
-     *     ),
-     *     @OA\Response(
-     *         response=404, 
-     *         description="Product not found",
+     *         response=200,
+     *         description="Product deleted successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Product not found")
+     *             @OA\Property(property="message", type="string", example="Product deleted successfully")
      *         )
      *     ),
+     *     @OA\Response(response=404, description="Product not found"),
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden")
      * )
@@ -562,12 +529,12 @@ class ProductController extends Controller
     }
 
     /**
-     * Search for products by various criteria.
+     * Search products by name and description.
      * 
      * @OA\Get(
      *     path="/api/products/search/{limit?}",
-     *     summary="Search products with optional limit",
-     *     description="Search products by name, category, price range or status (public endpoint)",
+     *     summary="Search products",
+     *     description="Search products by name and description with optional limit",
      *     tags={"Products"},
      *     @OA\Parameter(
      *         name="limit",
@@ -577,46 +544,25 @@ class ProductController extends Controller
      *         @OA\Schema(type="integer", default=20, minimum=1, maximum=100)
      *     ),
      *     @OA\Parameter(
-     *         name="q",
+     *         name="query",
      *         in="query",
-     *         description="Search term for product name or description",
-     *         required=false,
+     *         description="Search query string",
+     *         required=true,
      *         @OA\Schema(type="string", example="smartphone")
-     *     ),
-     *     @OA\Parameter(
-     *         name="category_id",
-     *         in="query",
-     *         description="Filter by category ID",
-     *         required=false,
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *     @OA\Parameter(
-     *         name="min_price",
-     *         in="query",
-     *         description="Minimum price",
-     *         required=false,
-     *         @OA\Schema(type="number", format="float", minimum=0, example=100.00)
-     *     ),
-     *     @OA\Parameter(
-     *         name="max_price",
-     *         in="query",
-     *         description="Maximum price",
-     *         required=false,
-     *         @OA\Schema(type="number", format="float", minimum=0, example=1000.00)
-     *     ),
-     *     @OA\Parameter(
-     *         name="status",
-     *         in="query",
-     *         description="Product status (only active products shown)",
-     *         required=false,
-     *         @OA\Schema(type="string", enum={"in_stock", "out_of_stock"}, example="in_stock")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="List of products matching search criteria",
+     *         description="Search results",
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(ref="#/components/schemas/Product")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The query field is required.")
      *         )
      *     )
      * )
@@ -664,12 +610,12 @@ class ProductController extends Controller
     }
 
     /**
-     * Display a listing of daily deals products.
+     * Get daily deals products.
      * 
      * @OA\Get(
-     *     path="/api/products/daily-deals/{limit?}",
+     *     path="/api/deals/{limit?}",
      *     summary="Get daily deals products",
-     *     description="Returns a list of active products marked as daily deals",
+     *     description="Returns a list of products with active daily deals (public endpoint, default limit is 20)",
      *     tags={"Products"},
      *     @OA\Parameter(
      *         name="limit",
@@ -688,19 +634,18 @@ class ProductController extends Controller
      *     )
      * )
      */
- public function getDeals($limit = 20)
-{
-    // Validate and constrain the limit
-    $limit = is_numeric($limit) ? (int)$limit : 20;
-    $limit = min(max($limit, 1), 100);  // Between 1 and 100
-    
-    $products = Product::where('daily_deals', 'active')
-        ->where('status', '!=', 'deactive') // Also exclude deactivated products
-        ->with('category')
-        ->orderBy('created_at', 'desc')
-        ->limit($limit)
-        ->get();
-    
-    return response()->json($products);
-}
+    public function getDeals($limit = 20)
+    {
+        // Validate and constrain the limit
+        $limit = is_numeric($limit) ? (int)$limit : 20;
+        $limit = min(max($limit, 1), 100);  // Between 1 and 100
+        
+        $products = Product::where('daily_deals', 'active')
+            ->where('status', '!=', 'deactive')
+            ->with('category')
+            ->take($limit)
+            ->get();
+        
+        return response()->json($products);
+    }
 }
