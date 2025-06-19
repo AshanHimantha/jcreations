@@ -128,7 +128,7 @@ class CartItemController extends Controller
      * @OA\Put(
      *     path="/api/cart/items/{id}",
      *     summary="Update cart item",
-     *     description="Updates the quantity and wish message of an item in the cart. Requires cart_id for guest users.",
+     *     description="Updates the quantity and/or wish message of an item in the cart. Requires cart_id for guest users.",
      *     tags={"Cart Items"},
      *     @OA\Parameter(
      *         name="id",
@@ -140,8 +140,8 @@ class CartItemController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"quantity"},
-     *             @OA\Property(property="quantity", type="integer", example=3),
+     *             @OA\Property(property="quantity", type="integer", example=3, 
+     *                          description="Item quantity. Optional - only needed if updating quantity"),
      *             @OA\Property(property="wish", type="string", nullable=true, example="Happy Birthday Ashan",
      *                          description="Custom message for cake decoration"),
      *             @OA\Property(property="cart_id", type="integer", nullable=true, example=1,
@@ -166,7 +166,7 @@ class CartItemController extends Controller
     {
         try {
             $validated = $request->validate([
-                'quantity' => 'required|integer|min:1',
+                'quantity' => 'sometimes|integer|min:1',
                 'wish' => 'nullable|string|max:255'
             ]);
             
@@ -178,11 +178,16 @@ class CartItemController extends Controller
                 ->where('id', $id)
                 ->firstOrFail();
                 
-            // Update quantity and wish
-            $cartItem->quantity = $validated['quantity'];
+            // Update quantity if provided
+            if (isset($validated['quantity'])) {
+                $cartItem->quantity = $validated['quantity'];
+            }
+            
+            // Update wish if provided
             if (isset($validated['wish'])) {
                 $cartItem->wish = $validated['wish'];
             }
+            
             $cartItem->save();
             
             return response()->json([
