@@ -48,6 +48,7 @@ class ProductController extends Controller
         
         $products = Product::with('category')
             ->where('status', '!=', 'deactive')
+            ->orderBy('created_at', 'desc')  // Get latest products first
             ->take($limit)
             ->get();
         
@@ -85,9 +86,14 @@ class ProductController extends Controller
     public function adminIndex($limit = null)
     {
         if ($limit !== null) {
-            $products = Product::with('category')->take($limit)->get();
+            $products = Product::with('category')
+                ->orderBy('created_at', 'desc')  // Get latest products first
+                ->take($limit)
+                ->get();
         } else {
-            $products = Product::with('category')->get();
+            $products = Product::with('category')
+                ->orderBy('created_at', 'desc')  // Get latest products first
+                ->get();
         }
         
         return response()->json($products);
@@ -604,7 +610,9 @@ class ProductController extends Controller
             $query->where('status', $request->input('status'));
         }
         
-        $products = $query->limit($limit)->get();
+        $products = $query->orderBy('created_at', 'desc')  // Get latest products first
+                         ->limit($limit)
+                         ->get();
         
         return response()->json($products);
     }
@@ -643,6 +651,7 @@ class ProductController extends Controller
         $products = Product::where('daily_deals', 'active')
             ->where('status', '!=', 'deactive')
             ->with('category')
+            ->orderBy('created_at', 'desc')  // Get latest products first
             ->take($limit)
             ->get();
         
