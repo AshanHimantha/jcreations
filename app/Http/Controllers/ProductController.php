@@ -577,7 +577,7 @@ class ProductController extends Controller
     {
         // Validate and constrain the limit
         $limit = is_numeric($limit) ? (int)$limit : 20;
-        $limit = min(max($limit, 1), 100);  // Between 1 and 100
+        $limit = min(max($limit, 1), 100000);  // Between 1 and 100
         
         $query = Product::with('category')
                 ->where('status', '!=', 'deactive');
@@ -646,7 +646,7 @@ class ProductController extends Controller
     {
         // Validate and constrain the limit
         $limit = is_numeric($limit) ? (int)$limit : 20;
-        $limit = min(max($limit, 1), 100);  // Between 1 and 100
+        $limit = min(max($limit, 1), 100000);  // Between 1 and 100
         
         $products = Product::where('daily_deals', 'active')
             ->where('status', '!=', 'deactive')
