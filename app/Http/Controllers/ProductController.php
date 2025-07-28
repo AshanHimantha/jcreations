@@ -535,26 +535,54 @@ class ProductController extends Controller
     }
 
     /**
-     * Search products by name and description.
-     * 
+     * Search products by name, description, and filters.
+     *
      * @OA\Get(
      *     path="/api/products/search/{limit?}",
      *     summary="Search products",
-     *     description="Search products by name and description with optional limit",
+     *     description="Search products by name, description, category, price range, and status with optional limit.",
      *     tags={"Products"},
      *     @OA\Parameter(
      *         name="limit",
      *         in="path",
-     *         description="Maximum number of products to return (default: 20, max: 100)",
+     *         description="Maximum number of products to return (default: 20, max: 100000)",
      *         required=false,
-     *         @OA\Schema(type="integer", default=20, minimum=1, maximum=100)
+     *         @OA\Schema(type="integer", default=20, minimum=1, maximum=100000)
      *     ),
      *     @OA\Parameter(
-     *         name="query",
+     *         name="q",
      *         in="query",
-     *         description="Search query string",
-     *         required=true,
+     *         description="Search query string (matches name or description)",
+     *         required=false,
      *         @OA\Schema(type="string", example="smartphone")
+     *     ),
+     *     @OA\Parameter(
+     *         name="category_id",
+     *         in="query",
+     *         description="Filter by category ID",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="min_price",
+     *         in="query",
+     *         description="Minimum price",
+     *         required=false,
+     *         @OA\Schema(type="number", format="float", example=100)
+     *     ),
+     *     @OA\Parameter(
+     *         name="max_price",
+     *         in="query",
+     *         description="Maximum price",
+     *         required=false,
+     *         @OA\Schema(type="number", format="float", example=1000)
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Product status (in_stock, out_of_stock, etc.)",
+     *         required=false,
+     *         @OA\Schema(type="string", example="in_stock")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -562,13 +590,6 @@ class ProductController extends Controller
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(ref="#/components/schemas/Product")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="The query field is required.")
      *         )
      *     )
      * )

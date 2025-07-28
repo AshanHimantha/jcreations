@@ -717,7 +717,7 @@
                     "Cart Items"
                 ],
                 "summary": "Update cart item",
-                "description": "Updates the quantity and wish message of an item in the cart. Requires cart_id for guest users.",
+                "description": "Updates the quantity and/or wish message of an item in the cart. Requires cart_id for guest users.",
                 "operationId": "103627d0762186830290d892b3e990d5",
                 "parameters": [
                     {
@@ -736,11 +736,9 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "quantity"
-                                ],
                                 "properties": {
                                     "quantity": {
+                                        "description": "Item quantity. Optional - only needed if updating quantity",
                                         "type": "integer",
                                         "example": 3
                                     },
@@ -4085,29 +4083,71 @@
                     "Products"
                 ],
                 "summary": "Search products",
-                "description": "Search products by name and description with optional limit",
+                "description": "Search products by name, description, category, price range, and status with optional limit.",
                 "operationId": "4047ea21e6364b9d18344b855d27bb50",
                 "parameters": [
                     {
                         "name": "limit",
                         "in": "path",
-                        "description": "Maximum number of products to return (default: 20, max: 100)",
+                        "description": "Maximum number of products to return (default: 20, max: 100000)",
                         "required": false,
                         "schema": {
                             "type": "integer",
                             "default": 20,
-                            "maximum": 100,
+                            "maximum": 100000,
                             "minimum": 1
                         }
                     },
                     {
-                        "name": "query",
+                        "name": "q",
                         "in": "query",
-                        "description": "Search query string",
-                        "required": true,
+                        "description": "Search query string (matches name or description)",
+                        "required": false,
                         "schema": {
                             "type": "string",
                             "example": "smartphone"
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Filter by category ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "min_price",
+                        "in": "query",
+                        "description": "Minimum price",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 100
+                        }
+                    },
+                    {
+                        "name": "max_price",
+                        "in": "query",
+                        "description": "Maximum price",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 1000
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Product status (in_stock, out_of_stock, etc.)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "in_stock"
                         }
                     }
                 ],
@@ -4121,22 +4161,6 @@
                                     "items": {
                                         "$ref": "#/components/schemas/Product"
                                     }
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "The query field is required."
-                                        }
-                                    },
-                                    "type": "object"
                                 }
                             }
                         }
