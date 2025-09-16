@@ -303,6 +303,47 @@
                 }
             }
         },
+        "/api/featured-banners": {
+            "get": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Get active featured banners",
+                "description": "Returns the currently active featured banners",
+                "operationId": "getFeaturedBanners",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Banner"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No featured banners found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No featured banners found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/admin/banner": {
             "post": {
                 "tags": [
@@ -327,7 +368,8 @@
                                         "type": "string",
                                         "enum": [
                                             "mobile",
-                                            "desktop"
+                                            "desktop",
+                                            "featured"
                                         ],
                                         "example": "desktop"
                                     },
@@ -419,7 +461,8 @@
                             "type": "string",
                             "enum": [
                                 "mobile",
-                                "desktop"
+                                "desktop",
+                                "featured"
                             ]
                         }
                     }

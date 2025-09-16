@@ -57,6 +57,45 @@ class BannerController extends Controller
     }
 
     /**
+     * Get the current active featured banners
+     * 
+     * @OA\Get(
+     *     path="/api/featured-banners",
+     *     summary="Get active featured banners",
+     *     description="Returns the currently active featured banners",
+     *     operationId="getFeaturedBanners",
+     *     tags={"Banners"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Banner")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="No featured banners found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="No featured banners found")
+     *         )
+     *     )
+     * )
+     */
+    public function getFeatured()
+    {
+        $featuredBanners = Banner::where('is_active', true)
+                                ->where('type', 'featured')
+                                ->get();
+        
+        if ($featuredBanners->isEmpty()) {
+            return response()->json(['message' => 'No featured banners found'], 404);
+        }
+        
+        return response()->json($featuredBanners);
+    }
+
+    /**
      * Store a new banner and replace any existing one of the same type
      * 
      * @OA\Post(
@@ -80,7 +119,7 @@ class BannerController extends Controller
      *                 @OA\Property(
      *                     property="type",
      *                     type="string",
-     *                     enum={"mobile", "desktop"},
+     *                     enum={"mobile", "desktop", "featured"},
      *                     description="Banner type",
      *                     example="desktop"
      *                 ),
@@ -134,7 +173,7 @@ class BannerController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'image' => 'required|image|max:2048', // Max 2MB
-            'type' => 'required|in:mobile,desktop',
+            'type' => 'required|in:mobile,desktop,featured',
             'title' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string|max:255',
             'link' => 'nullable|url|max:255',
@@ -198,7 +237,7 @@ class BannerController extends Controller
      *         required=true,
      *         @OA\Schema(
      *             type="string",
-     *             enum={"mobile", "desktop"}
+     *             enum={"mobile", "desktop", "featured"}
      *         )
      *     ),
      *     @OA\Response(
@@ -234,7 +273,7 @@ class BannerController extends Controller
      */
     public function destroy($type)
     {
-        if (!in_array($type, ['mobile', 'desktop'])) {
+        if (!in_array($type, ['mobile', 'desktop', 'featured'])) {
             return response()->json(['message' => 'Invalid banner type'], 400);
         }
 

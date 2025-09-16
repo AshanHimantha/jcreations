@@ -73,6 +73,7 @@ Route::post('/orders/cod', [OrderController::class, 'createCodOrder']);
 Route::get('/orders/{id}', [OrderController::class, 'getOrder']);
 
 Route::get('/banner', [BannerController::class, 'show']);
+Route::get('/featured-banners', [BannerController::class, 'getFeatured']);
 
 Route::get('/cod-limit', [CodLimitController::class, 'show']);
 
