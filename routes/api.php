@@ -73,6 +73,7 @@ Route::post('/orders/cod', [OrderController::class, 'createCodOrder']);
 Route::get('/orders/{id}', [OrderController::class, 'getOrder']);
 
 Route::get('/banner', [BannerController::class, 'show']);
+Route::get('/featured-banners', [BannerController::class, 'getFeatured']);
 
 Route::get('/cod-limit', [CodLimitController::class, 'show']);
 
@@ -124,7 +125,8 @@ Route::prefix('admin')->group(function () {
             Route::put('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus']);
 
             Route::post('/banner', [BannerController::class, 'store']);
-            Route::delete('/banner', [BannerController::class, 'destroy']);
+            Route::delete('/banner/{type}', [BannerController::class, 'destroy']);
+            Route::delete('/banner/featured/{id}', [BannerController::class, 'destroyFeatured']);
 
             Route::post('/mobile-numbers', [MobileNumberController::class, 'store']);
             Route::put('/mobile-numbers/{mobile_number}', [MobileNumberController::class, 'update']);

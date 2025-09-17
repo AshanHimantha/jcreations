@@ -9,7 +9,7 @@ return new class extends Migration
    public function up()
 {
     Schema::table('banners', function (Blueprint $table) {
-        $table->enum('type', ['mobile', 'desktop'])->after('image_path');
+        $table->enum('type', ['mobile', 'desktop', 'featured'])->after('image_path');
     });
 }
 

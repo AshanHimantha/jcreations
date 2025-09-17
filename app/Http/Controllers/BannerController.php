@@ -57,12 +57,51 @@ class BannerController extends Controller
     }
 
     /**
+     * Get the current active featured banners
+     * 
+     * @OA\Get(
+     *     path="/api/featured-banners",
+     *     summary="Get active featured banners",
+     *     description="Returns the currently active featured banners",
+     *     operationId="getFeaturedBanners",
+     *     tags={"Banners"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Banner")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="No featured banners found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="No featured banners found")
+     *         )
+     *     )
+     * )
+     */
+    public function getFeatured()
+    {
+        $featuredBanners = Banner::where('is_active', true)
+                                ->where('type', 'featured')
+                                ->get();
+        
+        if ($featuredBanners->isEmpty()) {
+            return response()->json(['message' => 'No featured banners found'], 404);
+        }
+        
+        return response()->json($featuredBanners);
+    }
+
+    /**
      * Store a new banner and replace any existing one of the same type
      * 
      * @OA\Post(
      *     path="/api/admin/banner",
      *     summary="Upload a new banner",
-     *     description="Uploads a new banner and replaces any existing one of the same type",
+     *     description="Uploads a new banner. For mobile/desktop types, replaces existing banner. For featured type, allows up to 3 banners.",
      *     operationId="storeBanner",
      *     tags={"Banners"},
      *     security={{"sanctum":{}}},
@@ -80,7 +119,7 @@ class BannerController extends Controller
      *                 @OA\Property(
      *                     property="type",
      *                     type="string",
-     *                     enum={"mobile", "desktop"},
+     *                     enum={"mobile", "desktop", "featured"},
      *                     description="Banner type",
      *                     example="desktop"
      *                 ),
@@ -115,9 +154,10 @@ class BannerController extends Controller
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Validation error",
+     *         description="Validation error or featured banner limit exceeded",
      *         @OA\JsonContent(
-     *             @OA\Property(property="errors", type="object")
+     *             @OA\Property(property="errors", type="object"),
+     *             @OA\Property(property="message", type="string", example="Maximum of 3 featured banners allowed. Please delete an existing one first.")
      *         )
      *     ),
      *     @OA\Response(
@@ -134,39 +174,63 @@ class BannerController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'image' => 'required|image|max:2048', // Max 2MB
-            'type' => 'required|in:mobile,desktop',
+            'type' => 'required|in:mobile,desktop,featured',
             'title' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string|max:255',
-            'link' => 'nullable|url|max:255',
+            'link' => 'nullable|string|max:255', // Changed from url to string for more flexibility
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+                'received_data' => [
+                    'type' => $request->get('type'),
+                    'title' => $request->get('title'),
+                    'subtitle' => $request->get('subtitle'),
+                    'link' => $request->get('link'),
+                    'has_image' => $request->hasFile('image'),
+                ]
+            ], 422);
         }
 
         // Handle the file upload
         $imagePath = $request->file('image')->store('banners', 'public');
         
-        // Deactivate existing banners of the same type
-        Banner::where('is_active', true)
-              ->where('type', $request->type)
-              ->update(['is_active' => false]);
-        
-        // Delete old banner images of the same type to save space
-        $oldBanners = Banner::where('is_active', false)
-                           ->where('type', $request->type)
-                           ->get();
-        foreach ($oldBanners as $oldBanner) {
-            // Remove the file
-            if (Storage::disk('public')->exists($oldBanner->image_path)) {
-                Storage::disk('public')->delete($oldBanner->image_path);
+        // Handle different logic for featured vs other banner types
+        if ($request->type === 'featured') {
+            // For featured banners, check if we already have 3
+            $featuredCount = Banner::where('is_active', true)
+                                  ->where('type', 'featured')
+                                  ->count();
+            
+            if ($featuredCount >= 3) {
+                return response()->json([
+                    'message' => 'Maximum of 3 featured banners allowed. Please delete an existing one first.'
+                ], 422);
             }
+        } else {
+            // For mobile/desktop banners, replace existing ones (original behavior)
+            Banner::where('is_active', true)
+                  ->where('type', $request->type)
+                  ->update(['is_active' => false]);
+            
+            // Delete old banner images of the same type to save space
+            $oldBanners = Banner::where('is_active', false)
+                               ->where('type', $request->type)
+                               ->get();
+            foreach ($oldBanners as $oldBanner) {
+                // Remove the file
+                if (Storage::disk('public')->exists($oldBanner->image_path)) {
+                    Storage::disk('public')->delete($oldBanner->image_path);
+                }
+            }
+            
+            // Delete old banner records of the same type
+            Banner::where('is_active', false)
+                  ->where('type', $request->type)
+                  ->delete();
         }
-        
-        // Delete old banner records of the same type
-        Banner::where('is_active', false)
-              ->where('type', $request->type)
-              ->delete();
 
         // Create the new banner
         $banner = Banner::create([
@@ -198,7 +262,7 @@ class BannerController extends Controller
      *         required=true,
      *         @OA\Schema(
      *             type="string",
-     *             enum={"mobile", "desktop"}
+     *             enum={"mobile", "desktop", "featured"}
      *         )
      *     ),
      *     @OA\Response(
@@ -234,7 +298,7 @@ class BannerController extends Controller
      */
     public function destroy($type)
     {
-        if (!in_array($type, ['mobile', 'desktop'])) {
+        if (!in_array($type, ['mobile', 'desktop', 'featured'])) {
             return response()->json(['message' => 'Invalid banner type'], 400);
         }
 
@@ -254,5 +318,69 @@ class BannerController extends Controller
         $banner->delete();
         
         return response()->json(['message' => 'Banner deleted successfully']);
+    }
+
+    /**
+     * Delete featured banner by ID
+     * 
+     * @OA\Delete(
+     *     path="/api/admin/banner/featured/{id}",
+     *     summary="Delete featured banner by ID",
+     *     description="Deletes a specific featured banner by its ID",
+     *     operationId="destroyFeaturedBanner",
+     *     tags={"Banners"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Featured banner ID",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Featured banner deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Featured banner deleted successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Featured banner not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Featured banner not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function destroyFeatured($id)
+    {
+        $banner = Banner::where('id', $id)
+                       ->where('type', 'featured')
+                       ->where('is_active', true)
+                       ->first();
+        
+        if (!$banner) {
+            return response()->json(['message' => 'Featured banner not found'], 404);
+        }
+        
+        // Delete the image file
+        if (Storage::disk('public')->exists($banner->image_path)) {
+            Storage::disk('public')->delete($banner->image_path);
+        }
+        
+        $banner->delete();
+        
+        return response()->json(['message' => 'Featured banner deleted successfully']);
     }
 }
