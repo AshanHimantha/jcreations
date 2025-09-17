@@ -350,7 +350,7 @@
                     "Banners"
                 ],
                 "summary": "Upload a new banner",
-                "description": "Uploads a new banner and replaces any existing one of the same type",
+                "description": "Uploads a new banner. For mobile/desktop types, replaces existing banner. For featured type, allows up to 3 banners.",
                 "operationId": "storeBanner",
                 "requestBody": {
                     "required": true,
@@ -415,13 +415,17 @@
                         }
                     },
                     "422": {
-                        "description": "Validation error",
+                        "description": "Validation error or featured banner limit exceeded",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "errors": {
                                             "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Maximum of 3 featured banners allowed. Please delete an existing one first."
                                         }
                                     },
                                     "type": "object"
@@ -509,6 +513,72 @@
                                         "message": {
                                             "type": "string",
                                             "example": "No active banner found for this type"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/banner/featured/{id}": {
+            "delete": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Delete featured banner by ID",
+                "description": "Deletes a specific featured banner by its ID",
+                "operationId": "destroyFeaturedBanner",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Featured banner ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Featured banner deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Featured banner deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Featured banner not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Featured banner not found"
                                         }
                                     },
                                     "type": "object"
