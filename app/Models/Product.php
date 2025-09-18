@@ -47,6 +47,13 @@ use Illuminate\Database\Eloquent\Model;
  *         example="deactive",
  *         description="Daily deals status"
  *     ),
+ *     @OA\Property(
+ *         property="featured", 
+ *         type="string", 
+ *         enum={"active", "deactive"}, 
+ *         example="deactive",
+ *         description="Featured product status"
+ *     ),
  *     @OA\Property(property="discounted_price", type="number", format="float", example=899.99, description="Calculated price after applying discount (computed attribute)"),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-14T10:30:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-14T10:30:00Z")
@@ -70,7 +77,8 @@ class Product extends Model
         'price',
         'discount_percentage',
         'status',
-        'daily_deals'
+        'daily_deals',
+        'featured'
     ];
 
     /**
