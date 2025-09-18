@@ -125,7 +125,8 @@ class ProductController extends Controller
      *                 @OA\Property(property="discount_percentage", type="number", format="float", minimum=0, maximum=100, example=10.5),
      *                 @OA\Property(property="discounted_price", type="number", format="float", minimum=0, example=899.99, description="Direct discounted price (alternative to discount_percentage)"),
      *                 @OA\Property(property="status", type="string", enum={"deactive", "in_stock", "out_of_stock"}, example="in_stock"),
-     *                 @OA\Property(property="daily_deals", type="string", enum={"active", "deactive"}, example="deactive", description="Daily deals status")
+     *                 @OA\Property(property="daily_deals", type="string", enum={"active", "deactive"}, example="deactive", description="Daily deals status"),
+     *                 @OA\Property(property="featured", type="string", enum={"active", "deactive"}, example="deactive", description="Featured product status")
      *             )
      *         )
      *     ),
@@ -167,6 +168,7 @@ class ProductController extends Controller
                 'discounted_price' => 'nullable|numeric|min:0',
                 'status' => ['required', Rule::in(['deactive', 'in_stock', 'out_of_stock'])],
                 'daily_deals' => ['nullable', Rule::in(['active', 'deactive'])],
+                'featured' => ['nullable', Rule::in(['active', 'deactive'])],
                 'image1' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -199,6 +201,7 @@ class ProductController extends Controller
             $product->discount_percentage = $validated['discount_percentage'] ?? 0;
             $product->status = $validated['status'];
             $product->daily_deals = $validated['daily_deals'] ?? 'deactive';
+            $product->featured = $validated['featured'] ?? 'deactive';
             
             // Handle image uploads
             $images = [];
@@ -310,7 +313,8 @@ class ProductController extends Controller
      *                 @OA\Property(property="discount_percentage", type="number", format="float", minimum=0, maximum=100, example=10.5),
      *                 @OA\Property(property="discounted_price", type="number", format="float", minimum=0, example=899.99),
      *                 @OA\Property(property="status", type="string", enum={"deactive", "in_stock", "out_of_stock"}, example="in_stock"),
-     *                 @OA\Property(property="daily_deals", type="string", enum={"active", "deactive"}, example="deactive")
+     *                 @OA\Property(property="daily_deals", type="string", enum={"active", "deactive"}, example="deactive"),
+     *                 @OA\Property(property="featured", type="string", enum={"active", "deactive"}, example="deactive")
      *             )
      *         )
      *     ),
@@ -364,6 +368,10 @@ class ProductController extends Controller
             
             if ($request->has('daily_deals')) {
                 $rules['daily_deals'] = Rule::in(['active', 'deactive']);
+            }
+            
+            if ($request->has('featured')) {
+                $rules['featured'] = Rule::in(['active', 'deactive']);
             }
             
             if ($request->hasFile('image1')) {
@@ -438,6 +446,10 @@ class ProductController extends Controller
             
             if ($request->has('daily_deals')) {
                 $product->daily_deals = $validated['daily_deals'];
+            }
+            
+            if ($request->has('featured')) {
+                $product->featured = $validated['featured'];
             }
             
             // Handle image updates
@@ -670,6 +682,47 @@ class ProductController extends Controller
         $limit = min(max($limit, 1), 100000);  // Between 1 and 100
         
         $products = Product::where('daily_deals', 'active')
+            ->where('status', '!=', 'deactive')
+            ->with('category')
+            ->orderBy('created_at', 'desc')  // Get latest products first
+            ->take($limit)
+            ->get();
+        
+        return response()->json($products);
+    }
+
+    /**
+     * Get featured products.
+     * 
+     * @OA\Get(
+     *     path="/api/featured/{limit?}",
+     *     summary="Get featured products",
+     *     description="Returns a list of products with active featured status (public endpoint, default limit is 20)",
+     *     tags={"Products"},
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="path",
+     *         description="Maximum number of products to return (default: 20, max: 100)",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=20, minimum=1, maximum=100)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of featured products",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Product")
+     *         )
+     *     )
+     * )
+     */
+    public function getFeatured($limit = 20)
+    {
+        // Validate and constrain the limit
+        $limit = is_numeric($limit) ? (int)$limit : 20;
+        $limit = min(max($limit, 1), 100000);  // Between 1 and 100
+        
+        $products = Product::where('featured', 'active')
             ->where('status', '!=', 'deactive')
             ->with('category')
             ->orderBy('created_at', 'desc')  // Get latest products first

@@ -48,6 +48,7 @@ Route::get('/products/{limit?}', [ProductController::class, 'index']);
 Route::get('/product/single/{id}', [ProductController::class, 'show']);
 Route::get('/products/search/{limit?}', [ProductController::class, 'search']);
 Route::get('/deals/{limit?}', [ProductController::class, 'getDeals']);
+Route::get('/featured/{limit?}', [ProductController::class, 'getFeatured']);
 
 
 // locations
